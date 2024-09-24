@@ -4,7 +4,8 @@
             <div class="d-block">
                 <div class="logo text-center">
                     <a href="{{ url('home') }}">
-                        <img src="{{ $company_logo ?? ''}}" data-custom-image="{{url('assets/images/logo/sidebar_logo.png')}}" alt="Logo" srcset="">
+                        <img src="{{ $company_logo ?? ''}}"
+                             data-custom-image="{{url('assets/images/logo/sidebar_logo.png')}}" alt="Logo" srcset="">
                     </a>
                 </div>
             </div>
@@ -39,14 +40,25 @@
                     @endcanany
                 @endcanany
 
-                @canany(['item-list','item-create','item-update','item-delete'])
+                @canany(['item-list','item-create','item-update','item-delete','tip-list','tip-create','tip-update','tip-delete'])
+
                     <div class="sidebar-new-title">{{ __('Items Management') }}</div>
-                    <li class="sidebar-item">
-                        <a href="{{ url('item') }}" class='sidebar-link'>
-                            <i class="bi bi-ui-radios-grid"></i>
-                            <span class="menu-item">{{ __('Items') }}</span>
-                        </a>
-                    </li>
+                    @canany(['item-list','item-create','item-update','item-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ url('item') }}" class='sidebar-link'>
+                                <i class="bi bi-ui-radios-grid"></i>
+                                <span class="menu-item">{{ __('Items') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
+                    @canany(['tip-list','tip-create','tip-update','tip-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ route('tips.index') }}" class='sidebar-link'>
+                                <i class="bi bi-info-circle"></i>
+                                <span class="menu-item">{{ __('Tips') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
                 @endcanany
 
 
@@ -105,6 +117,45 @@
                             <a href="{{ route('feature-section.index') }}" class='sidebar-link'>
                                 <i class="bi bi-grid-1x2"></i>
                                 <span class="menu-item">{{ __('Feature Section') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
+                @endcanany
+
+                @canany(['country-list','country-create','country-update','country-delete','state-list','state-create','state-update','state-delete','city-list','city-create','city-update','city-delete'])
+                    <div class="sidebar-new-title">{{ __('Place/Location Management') }}</div>
+                    @canany(['country-list','country-create','country-update','country-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ route('countries.index') }}" class='sidebar-link'>
+                                <i class="bi bi-globe"></i>
+                                <span class="menu-item">{{ __('Countries') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
+
+                    @canany(['state-list','state-create','state-update','state-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ route('states.index') }}" class='sidebar-link'>
+                                <i class="fa fa-map-marked-alt"></i>
+                                <span class="menu-item">{{ __('States') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
+
+                    @canany(['city-list','city-create','city-update','city-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ route('cities.index') }}" class='sidebar-link'>
+                                <i class="fa fa-map-marker-alt"></i>
+                                <span class="menu-item">{{ __('Cities') }}</span>
+                            </a>
+                        </li>
+                    @endcanany
+
+                    @canany(['area-list','area-create','area-update','area-delete'])
+                        <li class="sidebar-item">
+                            <a href="{{ route('area.index') }}" class='sidebar-link'>
+                                <i class="fa fa-map-marker"></i>
+                                <span class="menu-item">{{ __('Areas') }}</span>
                             </a>
                         </li>
                     @endcanany
@@ -172,6 +223,35 @@
                         </li>
                     @endcanany
                 @endcanany
+                @canany(['blog-ist','blog-create','blog-update','blog-delete'])
+                    <div class="sidebar-new-title">{{ __('Blog Management') }}</div>
+                    <li class="sidebar-item">
+                        <a href="{{ route('blog.index') }}" class='sidebar-link'>
+                            <i class="bi bi-pencil"></i>
+                            <span class="menu-item">{{ __('Blogs') }}</span>
+                        </a>
+                    </li>
+                @endcanany
+
+                @canany(['faq-create','faq-list','faq-update','faq-delete'])
+                    <div class="sidebar-new-title">{{ __('FAQ') }}</div>
+                    <li class="sidebar-item">
+                        <a href="{{ route('faq.index') }}" class='sidebar-link'>
+                            <i class="bi bi-question-square-fill"></i>
+                            <span class="menu-item">{{ __('FAQs') }}</span>
+                        </a>
+                    </li>
+
+                @endcanany
+
+
+                <div class="sidebar-new-title">{{ __('Web') }}</div>
+                <li class="sidebar-item">
+                    <a href="{{ route('contact-us.index') }}" class='sidebar-link'>
+                        <i class="bi bi-person-bounding-box"></i>
+                        <span class="menu-item">{{ __('User Queries') }}</span>
+                    </a>
+                </li>
 
                 @canany(['settings-update'])
                     <div class="sidebar-new-title">{{ __('System Settings') }}</div>

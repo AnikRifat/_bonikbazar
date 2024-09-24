@@ -3,72 +3,51 @@
 namespace App\Services;
 
 use App\Models\Category;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use JsonException;
 
 class HelperService {
-    /**
-     * @param array $data
-     * @return bool
-     */
-    public function changeEnv($data = array()) {
-        if (count($data) > 0) {
-
+    public static function changeEnv($updateData = array()): bool {
+        if (count($updateData) > 0) {
             // Read .env-file
             $env = file_get_contents(base_path() . '/.env');
             // Split string on every " " and write into array
             $env = explode(PHP_EOL, $env);
-            // $env = preg_split('/\s+/', $env);
-            $temp_env_keys = [];
+
+            $env_array = [];
             foreach ($env as $env_value) {
-                $entry = explode("=", $env_value);
-                $temp_env_keys[] = $entry[0];
-
-            }
-            // Loop through given data
-            foreach ((array)$data as $key => $value) {
-                $key_value = $key . "=" . $value;
-
-                if (in_array($key, $temp_env_keys, true)) {
-                    // Loop through .env-data
-                    foreach ($env as $env_key => $env_value) {
-                        // Turn the value into an array and stop after the first split
-                        // So it's not possible to split e.g. the App-Key by accident
-                        $entry = explode("=", $env_value, 2);
-                        // // Check, if new key fits the actual .env-key
-                        if ($entry[0] == $key) {
-
-                            // If yes, overwrite it with the new one
-                            $env[$env_key] = $key . "=\"" . $value . "\"";
-
-                        } else {
-                            // If not, keep the old one
-                            $env[$env_key] = $env_value;
-                        }
-                    }
-                } else {
-                    $env[] = $key_value;
+                if (empty($env_value)) {
+                    //Add and Empty Line
+                    $env_array[] = "";
+                    continue;
                 }
+
+                $entry = explode("=", $env_value, 2);
+                $env_array[$entry[0]] = $entry[0] . "=\"" . str_replace("\"", "", $entry[1]) . "\"";
+            }
+
+            foreach ($updateData as $key => $value) {
+                $env_array[$key] = $key . "=\"" . str_replace("\"", "", $value) . "\"";
             }
             // Turn the array back to a String
-            $env = implode("\n", $env);
+            $env = implode("\n", $env_array);
 
             // And overwrite the .env with the new data
             file_put_contents(base_path() . '/.env', $env);
-
             return true;
         }
-
         return false;
     }
 
     /**
      * @param $categories
      * @param int $level
-     * @param string $parentCategoryID
+     * @param string|null $parentCategoryID
      * @description - This function will return the nested category Option tags using in memory optimization
-     * @return mixed
+     * @return bool
      */
-    public static function childCategoryRendering(&$categories, $level = 0, $parentCategoryID = '') {
+    public static function childCategoryRendering(&$categories, int $level = 0, string|null $parentCategoryID = ''): bool {
         // Foreach loop only on the parent category objects
         foreach (collect($categories)->where('parent_category_id', $parentCategoryID) as $key => $category) {
             echo "<option value='$category->id'>" . str_repeat('&nbsp;', $level * 4) . '|-- ' . $category->name . "</option>";
@@ -177,5 +156,46 @@ class HelperService {
 
 
         return $finalCategories;
+    }
+
+    /**
+     * Generate Slug for any model
+     * @param $model - Instance of Model
+     * @param string $slug
+     * @param int|null $excludeID
+     * @param int $count
+     * @return string
+     */
+    public static function generateUniqueSlug($model, string $slug, int $excludeID = null, int $count = 0): string {
+        /*NOTE : This can be improved by directly calling in the UI on type of title via AJAX*/
+        $slug = Str::slug($slug);
+        $newSlug = $count ? $slug . '-' . $count : $slug;
+
+        $data = $model::where('slug', $newSlug);
+        if ($excludeID !== null) {
+            $data->where('id', '!=', $excludeID);
+        }
+
+        if (in_array(SoftDeletes::class, class_uses_recursive($model), true)) {
+            $data->withTrashed();
+        }
+        while ($data->exists()) {
+            return self::generateUniqueSlug($model, $slug, $excludeID, $count + 1);
+        }
+        return $newSlug;
+    }
+
+    public static function findAllCategoryIds($model): array {
+        $ids = [];
+
+        foreach ($model as $item) {
+            $ids[] = $item['id'];
+
+            if (!empty($item['children'])) {
+                $ids = array_merge($ids, self::findAllCategoryIds($item['children']));
+            }
+        }
+
+        return $ids;
     }
 }

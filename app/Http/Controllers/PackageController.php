@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Package;
 use App\Models\PaymentTransaction;
-use App\Models\Setting;
 use App\Models\UserPurchasedPackage;
 use App\Services\BootstrapTableService;
+use App\Services\CachingService;
 use App\Services\FileService;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
@@ -26,22 +27,23 @@ class PackageController extends Controller {
     public function index() {
         ResponseService::noAnyPermissionThenRedirect(['item-listing-package-list', 'item-listing-package-create', 'item-listing-package-update', 'item-listing-package-delete']);
         $category = Category::select(['id', 'name'])->where('status', 1)->get();
-        $currency_symbol = Setting::where('name', 'currency_symbol')->pluck('value')->first();
+        $currency_symbol = CachingService::getSystemSettings('currency_symbol');
         return view('packages.item-listing', compact('category', 'currency_symbol'));
     }
 
     public function store(Request $request) {
         ResponseService::noPermissionThenSendJson('item-listing-package-create');
         $validator = Validator::make($request->all(), [
-            'name'            => 'required',
-            'price'           => 'required',
-            'discount_price'  => 'required',
-            'duration_type'   => 'required|in:limited,unlimited',
-            'duration'        => 'required_if:duration_type,limited',
-            'item_limit_type' => 'required|in:limited,unlimited',
-            'item_limit'      => 'required_if:limit_type,limited',
-            'icon'            => 'required|mimes:jpeg,jpg,png|max:2048',
-            'description'     => 'required',
+            'name'                   => 'required',
+            'price'                  => 'required|numeric',
+            'discount_in_percentage' => 'required|numeric',
+            'final_price'            => 'required|numeric',
+            'duration_type'          => 'required|in:limited,unlimited',
+            'duration'               => 'required_if:duration_type,limited',
+            'item_limit_type'        => 'required|in:limited,unlimited',
+            'item_limit'             => 'required_if:limit_type,limited',
+            'icon'                   => 'required|mimes:jpeg,jpg,png|max:2048',
+            'description'            => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -98,15 +100,16 @@ class PackageController extends Controller {
     public function update(Request $request, $id) {
         ResponseService::noPermissionThenSendJson('item-listing-package-update');
         $validator = Validator::make($request->all(), [
-            'name'            => 'required',
-            'price'           => 'required',
-            'discount_price'  => 'required',
-            'duration_type'   => 'required|in:limited,unlimited',
-            'duration'        => 'required_if:duration_type,limited',
-            'item_limit_type' => 'required|in:limited,unlimited',
-            'item_limit'      => 'required_if:limit_type,limited',
-            'icon'            => 'nullable|mimes:jpeg,jpg,png|max:2048',
-            'description'     => 'required',
+            'name'                   => 'required',
+            'price'                  => 'required|numeric',
+            'discount_in_percentage' => 'required|numeric',
+            'final_price'            => 'required|numeric',
+            'duration_type'          => 'required|in:limited,unlimited',
+            'duration'               => 'required_if:duration_type,limited',
+            'item_limit_type'        => 'required|in:limited,unlimited',
+            'item_limit'             => 'required_if:limit_type,limited',
+            'icon'                   => 'nullable|mimes:jpeg,jpg,png|max:2048',
+            'description'            => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -140,7 +143,7 @@ class PackageController extends Controller {
     public function advertisementIndex() {
         ResponseService::noAnyPermissionThenRedirect(['advertisement-package-list', 'advertisement-package-create', 'advertisement-package-update', 'advertisement-package-delete']);
         $category = Category::select(['id', 'name'])->where('status', 1)->get();
-        $currency_symbol = Setting::where('name', 'currency_symbol')->pluck('value')->first();
+        $currency_symbol = CachingService::getSystemSettings('currency_symbol');
         return view('packages.advertisement', compact('category', 'currency_symbol'));
     }
 
@@ -180,13 +183,14 @@ class PackageController extends Controller {
     public function advertisementStore(Request $request) {
         ResponseService::noPermissionThenSendJson('advertisement-package-create');
         $validator = Validator::make($request->all(), [
-            'name'           => 'required',
-            'price'          => 'required',
-            'discount_price' => 'required',
-            'duration'       => 'nullable',
-            'item_limit'     => 'nullable',
-            'icon'           => 'required|mimes:jpeg,jpg,png|max:2048',
-            'description'    => 'required',
+            'name'                   => 'required',
+            'price'                  => 'required|numeric',
+            'discount_in_percentage' => 'required|numeric',
+            'final_price'            => 'required|numeric',
+            'duration'               => 'nullable',
+            'item_limit'             => 'nullable',
+            'icon'                   => 'required|mimes:jpeg,jpg,png|max:2048',
+            'description'            => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -214,13 +218,14 @@ class PackageController extends Controller {
     public function advertisementUpdate(Request $request, $id) {
         ResponseService::noPermissionThenSendJson('advertisement-package-update');
         $validator = Validator::make($request->all(), [
-            'name'           => 'nullable',
-            'price'          => 'nullable',
-            'discount_price' => 'nullable',
-            'duration'       => 'nullable',
-            'item_limit'     => 'nullable',
-            'icon'           => 'nullable|mimes:jpeg,jpg,png|max:2048',
-            'description'    => 'nullable',
+            'name'                   => 'nullable',
+            'price'                  => 'required|numeric',
+            'discount_in_percentage' => 'required|numeric',
+            'final_price'            => 'required|numeric',
+            'duration'               => 'nullable',
+            'item_limit'             => 'nullable',
+            'icon'                   => 'nullable|mimes:jpeg,jpg,png|max:2048',
+            'description'            => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -249,7 +254,7 @@ class PackageController extends Controller {
         }
     }
 
-    public function userPackagesIndex(Request $request) {
+    public function userPackagesIndex() {
         ResponseService::noPermissionThenRedirect('user-package-list');
         return view('packages.user');
     }
@@ -279,7 +284,7 @@ class PackageController extends Controller {
         return response()->json($bulkData);
     }
 
-    public function paymentTransactionIndex(Request $request) {
+    public function paymentTransactionIndex() {
         ResponseService::noPermissionThenRedirect('payment-transactions-list');
         return view('packages.payment-transactions');
     }
@@ -302,7 +307,10 @@ class PackageController extends Controller {
         $bulkData['total'] = $total;
         $rows = array();
         foreach ($result as $key => $row) {
-            $rows[] = $row->toArray();
+            $tempRow = $row->toArray();
+            $tempRow['created_at'] = Carbon::createFromFormat('Y-m-d H:i:s', $row->created_at)->format('d-m-y H:i:s');
+            $tempRow['updated_at'] = Carbon::createFromFormat('Y-m-d H:i:s', $row->updated_at)->format('d-m-y H:i:s');
+            $rows[] = $tempRow;
         }
 
         $bulkData['rows'] = $rows;

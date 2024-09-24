@@ -2,7 +2,6 @@
 
 namespace App\Services\Payment;
 
-use JetBrains\PhpStorm\Pure;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent;
 use Stripe\StripeClient;
@@ -11,7 +10,12 @@ class StripePayment implements PaymentInterface {
     private StripeClient $stripe;
     private string $currencyCode;
 
-    #[Pure] public function __construct($secretKey, $currencyCode) {
+    /**
+     * StripePayment constructor.
+     * @param $secretKey
+     * @param $currencyCode
+     */
+    public function __construct($secretKey, $currencyCode) {
         // Call Stripe Class and Create Payment Intent
         $this->stripe = new StripeClient($secretKey);
         $this->currencyCode = $currencyCode;
@@ -45,24 +49,67 @@ class StripePayment implements PaymentInterface {
                     //                    ],
                 ]
             );
+
         } catch (ApiErrorException $e) {
             throw $e;
         }
     }
 
     /**
-     * @param $paymentId
-     * @return PaymentIntent
+     * @param $amount
+     * @param $customMetaData
+     * @return array
      * @throws ApiErrorException
      */
-    public function retrievePaymentIntent($paymentId) {
+    public function createAndFormatPaymentIntent($amount, $customMetaData): array {
+        $paymentIntent = $this->createPaymentIntent($amount, $customMetaData);
+        return $this->format($paymentIntent);
+    }
+
+    /**
+     * @param $paymentId
+     * @return array
+     * @throws ApiErrorException
+     */
+    public function retrievePaymentIntent($paymentId): array {
         try {
-            return $this->stripe->paymentIntents->retrieve($paymentId);
+            return $this->format($this->stripe->paymentIntents->retrieve($paymentId));
         } catch (ApiErrorException $e) {
             throw $e;
         }
     }
 
+    /**
+     * @param $paymentIntent
+     * @return array
+     */
+    public function format($paymentIntent) {
+        return $this->formatPaymentIntent($paymentIntent->id, $paymentIntent->amount, $paymentIntent->currency, $paymentIntent->status, $paymentIntent->metadata, $paymentIntent);
+    }
+
+    /**
+     * @param $id
+     * @param $amount
+     * @param $currency
+     * @param $status
+     * @param $metadata
+     * @param $paymentIntent
+     * @return array
+     */
+    public function formatPaymentIntent($id, $amount, $currency, $status, $metadata, $paymentIntent): array {
+        return [
+            'id'                       => $paymentIntent->id,
+            'amount'                   => $paymentIntent->amount,
+            'currency'                 => $paymentIntent->currency,
+            'metadata'                 => $paymentIntent->metadata,
+            'status'                   => match ($paymentIntent->status) {
+                "canceled" => "failed",
+                "succeeded" => "succeed",
+                "processing", "requires_action", "requires_capture", "requires_confirmation", "requires_payment_method" => "pending",
+            },
+            'payment_gateway_response' => $paymentIntent
+        ];
+    }
 
     /**
      * @param $currency

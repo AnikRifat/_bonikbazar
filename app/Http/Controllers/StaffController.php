@@ -119,7 +119,7 @@ class StaffController extends Controller {
             }
 
             if (Auth::user()->can('staff-delete')) {
-                $operate .= BootstrapTableService::deleteButton(route('staff.destroy', $row->id),);
+                $operate .= BootstrapTableService::deleteButton(route('staff.destroy', $row->id));
             }
 
             $tempRow = $row->toArray();
@@ -161,11 +161,5 @@ class StaffController extends Controller {
             ResponseService::errorResponse();
         }
 
-    }
-
-    public function updateFCMID(Request $request) {
-        $user = User::find($request->id);
-        $user->fcm_id = $request->token;
-        $user->save();
     }
 }

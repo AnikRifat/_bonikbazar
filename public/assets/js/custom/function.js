@@ -2,7 +2,7 @@
 
 function trans(label) {
     // return window.languageLabels.hasOwnProperty(label) ? window.languageLabels[label] : label;
-    return window.languageLabels[label] || label;
+    return window?.languageLabels[label] || label;
 }
 
 function showErrorToast(message) {
@@ -28,15 +28,14 @@ function showSuccessToast(message) {
 }
 
 function showWarningToast(message) {
-    $.toast({
+    Toastify({
         text: message,
-        showHideTransition: 'slide',
-        icon: 'warning',
-        loaderBg: '#f96868',
-        position: 'top-right',
-        // hideAfter: 1000
-
-    });
+        duration: 6000,
+        close: !0,
+        style: {
+            background: "linear-gradient(to right, #a7b000, #b08d00)"
+        }
+    }).showToast();
 }
 
 /**
@@ -389,4 +388,30 @@ function showPermanentlyDeletePopupModal(url, options = {}) {
         ...options,
     }
     showSweetAlertConfirmPopup(url, 'DELETE', opt);
+}
+
+/**
+ * Calculate Discounted price based on the Price and Discount(%)
+ * @param price
+ * @param discount
+ * @returns {string}
+ */
+function calculateDiscountedAmount(price, discount) {
+    let finalPrice = price - (price * discount / 100);
+    return finalPrice.toFixed(2);
+}
+
+/**
+ * Calculate Discount(%)
+ * @param price
+ * @param discountedPrice
+ * @returns {string}
+ */
+function calculateDiscount(price, discountedPrice) {
+    let finalDiscount = 100 - discountedPrice * 100 / price;
+    return finalDiscount.toFixed(2);
+}
+
+function generateSlug(text){
+    return text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 }

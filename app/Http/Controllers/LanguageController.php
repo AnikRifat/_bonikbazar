@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Language;
+use App\Rules\JsonFile;
 use App\Services\BootstrapTableService;
+use App\Services\CachingService;
 use App\Services\FileService;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
@@ -20,47 +22,46 @@ class LanguageController extends Controller {
         $this->uploadFolder = "language";
     }
 
-    public function index() {
-        $language = Language::where('code', 'en')->first();
-        Session::save();
-        Session::put('language', $language);
-        return view('settings.language');
-    }
-
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'name'       => 'required',
-            'code'       => 'required',
-            'rtl'        => 'nullable',
-            'app_file'   => 'required|mimetypes:application/json',
-            'panel_file' => 'required|mimetypes:application/json',
-            'image'      => 'required|mimes:jpeg,png,jpg,svg|max:2048',
+            'name'            => 'required',
+            'name_in_english' => 'required|regex:/^[\pL\s]+$/u',
+            'code'            => 'required|unique:languages,code',
+            'rtl'             => 'nullable',
+            'app_file'        => ['required', new JsonFile()],
+            'panel_file'      => ['required', new JsonFile()],
+            'web_file'        => ['required', new JsonFile()],
+            'image'           => 'required|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
         if ($validator->fails()) {
             ResponseService::validationError($validator->errors()->first());
         }
         try {
-            $language = new Language();
-            $language->name = $request->name;
-            $language->code = $request->code;
-            $language->rtl = $request->rtl == "on";
-
-            if ($request->hasFile('app_file')) {
-                $language->app_file = FileService::uploadLanguageFile($request->file('app_file'), $request->code . "_app");
-            }
+            $data = $request->all();
+            $data['rtl'] = $request->rtl == "on";
 
             if ($request->hasFile('panel_file')) {
-                $language->panel_file = FileService::uploadLanguageFile($request->file('panel_file'), $request->code);
+                $data['panel_file'] = FileService::uploadLanguageFile($request->file('panel_file'), $request->code);
+            }
+
+            if ($request->hasFile('app_file')) {
+                $data['app_file'] = FileService::uploadLanguageFile($request->file('app_file'), $request->code . "_app");
+            }
+
+            if ($request->hasFile('web_file')) {
+                $data['web_file'] = FileService::uploadLanguageFile($request->file('web_file'), $request->code . "_web");
             }
 
             if ($request->hasFile('image')) {
-                $language->image = FileService::upload($request->file('image'), $this->uploadFolder);
+                $data['image'] = FileService::upload($request->file('image'), $this->uploadFolder);
             }
-            $language->save();
+
+            Language::create($data);
+            CachingService::removeCache(config('constants.CACHE.LANGUAGE'));
             ResponseService::successResponse('Language Successfully Added');
         } catch (Throwable $th) {
             ResponseService::logErrorRedirect($th, "Language Controller -> Store");
-            ResponseService::errorResponse(route('language.index'), 'Something Went Wrong');
+            ResponseService::errorResponse('Something Went Wrong');
         }
     }
 
@@ -85,7 +86,7 @@ class LanguageController extends Controller {
         $rows = array();
         foreach ($result as $key => $row) {
             $tempRow = $row->toArray();
-            $tempRow['rtl'] = ($row->rtl == 1) ? "Yes" : "No";
+            $tempRow['rtl_text'] = ($row->rtl == 1) ? "Yes" : "No";
             $operate = '';
             if ($row->code != "en") {
                 $operate .= BootstrapTableService::editButton(route('language.update', $row->id), true);
@@ -101,36 +102,42 @@ class LanguageController extends Controller {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'name'       => 'required',
-            'code'       => 'required',
-            'rtl'        => 'required|boolean',
-            'app_file'   => 'nullable|mimes:json',
-            'panel_file' => 'nullable|mimes:json',
-            'image'      => 'nullable|mimes:jpeg,png,jpg,svg|max:2048',
+            'name'            => 'required',
+            'name_in_english' => 'required|regex:/^[\pL\s]+$/u',
+            'code'            => 'required|unique:languages,code,' . $id,
+            'rtl'             => 'required|boolean',
+            'app_file'        => 'nullable|mimes:json',
+            'panel_file'      => 'nullable|mimes:json',
+            'web_file'        => 'nullable|mimes:json',
+            'image'           => 'nullable|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
         if ($validator->fails()) {
             ResponseService::validationError($validator->errors()->first());
         }
         try {
             $language = Language::findOrFail($id);
-            $data = [
-                ...$request->all()
-            ];
+            $data = $request->all();
+
+            if ($request->hasFile('panel_file')) {
+                $data['panel_file'] = FileService::uploadLanguageFile($request->file('panel_file'), $language->code);
+            }
             if ($request->hasFile('app_file')) {
                 $data['app_file'] = FileService::uploadLanguageFile($request->file('app_file'), $language->code . "_app");
             }
-            if ($request->hasFile('panel_file')) {
-                $data['panel_file'] = FileService::uploadLanguageFile($request->file('panel_file'), $language->code);
+
+            if ($request->hasFile('web_file')) {
+                $data['web_file'] = FileService::uploadLanguageFile($request->file('web_file'), $language->code."_web");
             }
 
             if ($request->hasFile('image')) {
                 $data['image'] = FileService::replace($request->file('image'), $this->uploadFolder, $language->getRawOriginal('image'));
             }
             $language->update($data);
+            CachingService::removeCache(config('constants.CACHE.LANGUAGE'));
             ResponseService::successResponse('Language Updated successfully');
         } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, "Language Controller --> update");
-            ResponseService::errorResponse(route('language.index'), 'Something Went Wrong');
+            ResponseService::errorResponse('Something Went Wrong');
         }
     }
 
@@ -142,10 +149,11 @@ class LanguageController extends Controller {
             $language = Language::findOrFail($id);
             $language->delete();
 
-            FileService::deleteLanguageFile($language->app_file . "_app");
+            FileService::deleteLanguageFile($language->app_file);
             FileService::deleteLanguageFile($language->panel_file);
+            FileService::deleteLanguageFile($language->web_file);
             FileService::delete($language->getRawOriginal('image'));
-
+            CachingService::removeCache(config('constants.CACHE.LANGUAGE'));
             ResponseService::successResponse('Language Deleted successfully');
         } catch (Throwable $th) {
             ResponseService::logErrorRedirect($th, "Language Controller --> Destroy");
@@ -172,6 +180,12 @@ class LanguageController extends Controller {
 
     public function downloadAppFile() {
         return Response::download(base_path("resources/lang/en_app.json"), 'app.json', [
+            'Content-Type' => 'application/json',
+        ]);
+    }
+
+    public function downloadWebFile() {
+        return Response::download(base_path("resources/lang/en_web.json"), 'web.json', [
             'Content-Type' => 'application/json',
         ]);
     }

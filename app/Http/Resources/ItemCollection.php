@@ -25,68 +25,69 @@ class ItemCollection extends ResourceCollection {
             foreach ($this->collection as $key => $collection) {
                 /* NOTE : This code can be improved */
                 $response[$key] = $collection->toArray();
-                if ($collection->relationLoaded('featured_items')) {
+                if ($collection->status == "approved" && $collection->relationLoaded('featured_items')) {
                     $response[$key]['is_feature'] = count($collection->featured_items) > 0;
+                }else{
+                    $response[$key]['is_feature'] = false;
                 }
 
 
+                /*** Favourites ***/
                 if ($collection->relationLoaded('favourites')) {
                     $response[$key]['total_likes'] = $collection->favourites->count();
                     if (Auth::check()) {
-                        $response[$key]['is_liked'] = $collection->favourites->where(['item_id' => $collection->id, 'user_id' => Auth::user()->id])->count() > 0;
-
+//                        $response[$key]['is_liked'] = $collection->favourites->where(['item_id' => $collection->id, 'user_id' => Auth::user()->id])->count() > 0;
+                        $response[$key]['is_liked'] = $collection->favourites->where('item_id', $collection->id)->where('user_id', Auth::user()->id)->count() > 0;
                     } else {
                         $response[$key]['is_liked'] = false;
                     }
                 }
 
-//                if ($collection->relationLoaded('custom_fields')) {
-//                    $response[$key]['custom_fields'] = [];
-//
-//                    foreach ($collection->custom_fields as $key2 => $customField) {
-//                        $response[$key]['custom_fields'][$key2] = $customField->toArray();
-//
-//                        if ($collection->relationLoaded('item_custom_field_values')) {
-//                            $itemCustomFieldValues = $collection->item_custom_field_values->where('custom_field_id', $customField->id)->first();
-//                            if ($customField->type == "fileinput") {
-//                                $response[$key]['custom_fields'][$key2]['value'] = !empty($itemCustomFieldValues->value) ? [url($itemCustomFieldValues->value)] : [];
-//                            } else {
-//                                $response[$key]['custom_fields'][$key2]['value'] = $itemCustomFieldValues->value ?? [];
-//                            }
-//
-//                            $response[$key]['custom_fields'][$key2]['custom_field_value'] = !empty($itemCustomFieldValues) ? $itemCustomFieldValues->toArray() : (object)[];
-//                            unset($response[$key]['item_custom_field_values']);
-//                        }
-//                    }
-//                }
+                /*** Custom Fields ***/
                 if ($collection->relationLoaded('item_custom_field_values')) {
                     $response[$key]['custom_fields'] = [];
 
                     foreach ($collection->item_custom_field_values as $key2 => $customFieldValue) {
+                        $tempRow = [];
                         if ($customFieldValue->relationLoaded('custom_field')) {
                             if (!empty($customFieldValue->custom_field)) {
-                                $response[$key]['custom_fields'][$key2] = $customFieldValue->custom_field->toArray();
+                                $tempRow = $customFieldValue->custom_field->toArray();
 
                                 if ($customFieldValue->custom_field->type == "fileinput") {
-                                    $response[$key]['custom_fields'][$key2]['value'] = !empty($customFieldValue->value) ? [url(Storage::url($customFieldValue->value))] : [];
+                                    if (!is_array($customFieldValue->value)) {
+                                        $tempRow['value'] = !empty($customFieldValue->value) ? [url(Storage::url($customFieldValue->value))] : [];
+                                    } else {
+                                        $tempRow['value'] = null;
+                                    }
                                 } else {
-                                    $response[$key]['custom_fields'][$key2]['value'] = $customFieldValue->value ?? [];
+                                    $tempRow['value'] = $customFieldValue->value ?? [];
                                 }
 
-                                $response[$key]['custom_fields'][$key2]['custom_field_value'] = !empty($customFieldValue) ? $customFieldValue->toArray() : (object)[];
+                                $tempRow['custom_field_value'] = !empty($customFieldValue) ? $customFieldValue->toArray() : (object)[];
                             }
 
-                            unset($response[$key]['custom_fields'][$key2]['custom_field_value']['custom_field']);
+                            unset($tempRow['custom_field_value']['custom_field']);
+
+                            $response[$key]['custom_fields'][$key2] = $tempRow;
                         }
                     }
 
                     unset($response[$key]['item_custom_field_values']);
                 }
 
+
+                /*** Item Offers ***/
                 if ($collection->relationLoaded('item_offers') && Auth::check()) {
                     $response[$key]['is_already_offered'] = $collection->item_offers->where('item_id', $collection->id)->where('buyer_id', Auth::user()->id)->count() > 0;
                 } else {
                     $response[$key]['is_already_offered'] = false;
+                }
+
+                /*** User Reports ***/
+                if ($collection->relationLoaded('user_reports') && Auth::check()) {
+                    $response[$key]['is_already_reported'] = $collection->user_reports->where('user_id', Auth::user()->id)->count() > 0;
+                } else {
+                    $response[$key]['is_already_reported'] = false;
                 }
             }
             $featuredRows = [];

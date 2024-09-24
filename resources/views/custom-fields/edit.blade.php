@@ -160,13 +160,14 @@
                                data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-search-align="right"
                                data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true"
                                data-trim-on-search="false" data-responsive="true" data-sort-name="id"
+                               data-escape="true"
                                data-sort-order="desc" data-query-params="queryParams"
                                data-reorderable-rows="true" data-table="categories" data-use-row-attr-func="true" data-mobile-responsive="true">
                             <thead class="thead-dark">
                             <tr>
                                 <th scope="col" data-field="id" data-align="center" data-sortable="true">{{ __('ID') }}</th>
                                 <th scope="col" data-field="value" data-align="center" data-sortable="true">{{ __('Value') }}</th>
-                                <th scope="col" data-field="operate" data-align="center" data-sortable="false" data-events="customFieldValueEvents">{{ __('Action') }}</th>
+                                <th scope="col" data-field="operate"data-escape="false" data-align="center" data-sortable="false" data-events="customFieldValueEvents">{{ __('Action') }}</th>
                             </tr>
                             </thead>
                         </table>

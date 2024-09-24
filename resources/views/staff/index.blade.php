@@ -29,8 +29,9 @@
                                data-fixed-number="1" data-fixed-right-number="1" data-trim-on-search="false"
                                data-responsive="true" data-sort-name="id" data-sort-order="desc"
                                data-pagination-successively-size="3" data-query-params="queryParams"
+                               data-escape="true"
                                data-show-export="true" data-export-options='{"fileName": "staff-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
-                               data-table="users" data-status-column="deleted_at">
+                               data-table="users" data-status-column="deleted_at" data-mobile-responsive="true">
                             <thead class="thead-dark">
                             <tr>
                                 <th scope="col" data-field="id" data-sortable="true" data-align="center">{{__("ID")}}</th>
@@ -40,7 +41,7 @@
                                     <th scope="col" data-field="status" data-formatter="statusSwitchFormatter" data-sortable="false" data-align="center">{{__("Status")}}</th>
                                 @endcan
                                 @canany(['staff-update','staff-delete'])
-                                    <th scope="col" data-field="operate" data-sortable="false" data-events="staffEvents" data-align="center">{{__("Action")}}</th>
+                                    <th scope="col" data-field="operate" data-escape="false" data-sortable="false" data-events="staffEvents" data-align="center">{{__("Action")}}</th>
                                 @endcanany
                             </tr>
                             </thead>

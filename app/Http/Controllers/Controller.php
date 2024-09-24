@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContactUs;
 use App\Services\ResponseService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -77,12 +78,47 @@ class Controller extends BaseController {
             $test = $lang->code ?? "en";
             $files = resource_path('lang/' . $test . '.json');
 //            return File::get($files);
-//        });
+//        });]
             echo('window.languageLabels = ' . File::get($files));
+            http_response_code(200);
             exit();
         } catch (Throwable $th) {
             ResponseService::errorResponse($th);
         }
+    }
+
+    public function contactUsUIndex() {
+        return view('contact-us');
+    }
+
+    public function contactUsShow(Request $request) {
+
+        $offset = $request->offset ?? 0;
+        $limit = $request->limit ?? 10;
+        $sort = $request->sort ?? 'id';
+        $order = $request->order ?? 'DESC';
+
+        $sql = ContactUs::orderBy($sort, $order);
+
+        if (!empty($_GET['search'])) {
+            $search = $_GET['search'];
+            $sql->where('id', 'LIKE', "%$search%")
+                ->orwhere('name', 'LIKE', "%$search%")
+                ->orwhere('subject', 'LIKE', "%$search%")
+                ->orwhere('message', 'LIKE', "%$search%");
+        }
+        $total = $sql->count();
+        $sql->skip($offset)->take($limit);
+        $result = $sql->get();
+        $bulkData = array();
+        $bulkData['total'] = $total;
+        $rows = array();
+        foreach ($result as $row) {
+            $rows[] = $row->toArray();
+        }
+
+        $bulkData['rows'] = $rows;
+        return response()->json($bulkData);
     }
 
 }

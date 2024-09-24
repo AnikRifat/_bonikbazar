@@ -64,4 +64,20 @@ class CustomField extends Model {
         });
         return $query;
     }
+
+    public function scopeFilter($query, $filterObject) {
+        if (!empty($filterObject)) {
+            foreach ($filterObject as $column => $value) {
+                if ($column == "category_names") {
+                    $query->whereHas('custom_field_category', function ($query) use ($value) {
+                        $query->where('category_id', $value);
+                    });
+                } else {
+                    $query->where((string)$column, (string)$value);
+                }
+            }
+        }
+        return $query;
+
+    }
 }

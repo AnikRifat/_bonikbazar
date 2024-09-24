@@ -30,6 +30,7 @@
                                    data-fixed-number="2" data-fixed-right-number="1" data-trim-on-search="false"
                                    data-mobile-responsive="true" data-sort-name="id" data-toolbar="#toolbar" data-sort-order="desc"
                                    data-maintain-selected="true" data-export-data-type='all'
+                                   data-escape="true"
                                    data-export-options='{ "fileName": "roles-list-<?= date('d-m-y') ?>" ,"ignoreColumn":["operate"]}'
                                    data-show-export="true" data-query-params="queryParams" data-escape="true"
                                    data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
@@ -38,7 +39,7 @@
                                     <th scope="col" data-field="id" data-sortable="true" data-visible="false">{{ __('ID') }}</th>
                                     <th scope="col" data-field="no">{{ __('No.') }}</th>
                                     <th scope="col" data-field="name" data-sortable="true">{{ __('Name') }}</th>
-                                    <th scope="col" data-field="operate" data-escape="false">{{ __('Action') }}</th>
+                                    <th scope="col" data-field="operate"  data-escape="false" data-escape="false">{{ __('Action') }}</th>
                                 </tr>
                                 </thead>
                             </table>

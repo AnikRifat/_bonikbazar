@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\CustomFieldController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FeatureSectionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InstallerController;
@@ -11,16 +13,19 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SystemUpdateController;
+use App\Http\Controllers\TipController;
 use App\Http\Controllers\WebhookController;
-use App\Models\Setting;
+use App\Services\CachingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,23 +47,25 @@ Route::get('/', static function () {
 });
 
 Route::get('page/privacy-policy', static function () {
-    $privacy_policy = Setting::where('name', 'privacy_policy')->firstOrFail();
-    echo htmlspecialchars_decode($privacy_policy->value);
+    $privacy_policy = CachingService::getSystemSettings('privacy_policy');
+    echo htmlspecialchars_decode($privacy_policy);
 })->name('public.privacy-policy');
 
 Route::get('page/terms-conditions', static function () {
-    $terms_conditions = Setting::where('name', 'terms_conditions')->firstOrFail();
-    echo htmlspecialchars_decode($terms_conditions->value);
+    $terms_conditions = CachingService::getSystemSettings('terms_conditions');
+    echo htmlspecialchars_decode($terms_conditions);
 })->name('public.terms-conditions');
 
 
 Route::group(['prefix' => 'webhook'], static function () {
     Route::post('/stripe', [WebhookController::class, 'stripe']);
+    Route::post('/paystack', [WebhookController::class, 'paystack']);
+    Route::post('/razorpay', [WebhookController::class, 'razorpay']);
 });
 
 /* Non-Authenticated Common Functions */
 Route::group(['prefix' => 'common'], static function () {
-    Route::get('/js/lang.js', [Controller::class, 'readLanguageFile'])->name('common.language.read');
+    Route::get('/js/lang', [Controller::class, 'readLanguageFile'])->name('common.language.read');
 });
 Route::group(['prefix' => 'install'], static function () {
     Route::get('purchase-code', [InstallerController::class, 'purchaseCodeIndex'])->name('install.purchase-code.index');
@@ -125,6 +132,8 @@ Route::group(['middleware' => ['auth', 'language']], static function () {
         Route::get('payment-gateway', [SettingController::class, 'paymentSettingsIndex'])->name('settings.payment-gateway.index');
         Route::post('payment-gateway', [SettingController::class, 'paymentSettingsStore'])->name('settings.payment-gateway.store');
         Route::get('language', [SettingController::class, 'page'])->name('settings.language.index');
+        Route::get('admob', [SettingController::class, 'page'])->name('settings.admob.index');
+        Route::get('error-logs', [LogViewerController::class, 'index'])->name('settings.error-logs.index');
     });
 
     Route::group(['prefix' => 'system-update'], static function () {
@@ -138,6 +147,7 @@ Route::group(['middleware' => ['auth', 'language']], static function () {
         Route::get('set-language/{lang}', [LanguageController::class, 'setLanguage'])->name('language.set-current');
         Route::get('download/panel', [LanguageController::class, 'downloadPanelFile'])->name('language.download.panel.json');
         Route::get('download/app', [LanguageController::class, 'downloadAppFile'])->name('language.download.app.json');
+        Route::get('download/web', [LanguageController::class, 'downloadWebFile'])->name('language.download.web.json');
     });
     Route::resource('language', LanguageController::class);
     /*** Language Module : END ***/
@@ -148,11 +158,15 @@ Route::group(['middleware' => ['auth', 'language']], static function () {
     });
     Route::resource('staff', StaffController::class);
 
-    Route::get('updateFCMID', [StaffController::class, 'updateFCMID']);
     /*** User Module : END ***/
 
     /*** Customer Module : START ***/
+    Route::group(['prefix' => 'customer'], static function () {
+        Route::post('/assign-package', [CustomersController::class, 'assignPackage'])->name('customer.assign.package');
+    });
     Route::resource('customer', CustomersController::class);
+
+
     /*** Customer Module : END ***/
 
 
@@ -196,28 +210,79 @@ Route::group(['middleware' => ['auth', 'language']], static function () {
     Route::resource('feature-section', FeatureSectionController::class);
     /*** Feature Section Module : END ***/
 
+
+    /*** Roles Module : END ***/
     Route::get("/roles-list", [RoleController::class, 'list'])->name('roles.list');
     Route::resource('roles', RoleController::class);
+    /*** Roles Module : END ***/
+
+    /*** Tips Module : END ***/
+    Route::resource('tips', TipController::class);
+    /*** Tips Module : END ***/
+
+    /*** Blog Module : END ***/
+    Route::resource('blog', BlogController::class);
+    /*** Blog Module : END ***/
+
+    Route::resource('faq', FaqController::class);
+
+    Route::group(['prefix' => 'countries'], static function () {
+        Route::get("/", [PlaceController::class, 'countryIndex'])->name('countries.index');
+        Route::get("/show", [PlaceController::class, 'countryShow'])->name('countries.show');
+        Route::post("/import", [PlaceController::class, 'importCountry'])->name('countries.import');
+        Route::delete("/{id}/delete", [PlaceController::class, 'destroyCountry'])->name('countries.destroy');
+    });
+
+    Route::group(['prefix' => 'states'], static function () {
+        Route::get("/", [PlaceController::class, 'stateIndex'])->name('states.index');
+        Route::get("/show", [PlaceController::class, 'stateShow'])->name('states.show');
+        Route::get("/search", [PlaceController::class, 'stateSearch'])->name('states.search');
+    });
+
+    Route::group(['prefix' => 'cities'], static function () {
+        Route::get("/", [PlaceController::class, 'cityIndex'])->name('cities.index');
+        Route::get("/show", [PlaceController::class, 'cityShow'])->name('cities.show');
+        Route::get("/search", [PlaceController::class, 'citySearch'])->name('cities.search');
+    });
+    /*** Area Module : START ***/
+    Route::group(['prefix' => 'area'], static function () {
+        Route::get('/', [PlaceController::class, 'createArea'])->name('area.index');
+        Route::post('/create', [PlaceController::class, 'addArea'])->name('area.create');
+        Route::get("/show/{id}", [PlaceController::class, 'areaShow'])->name('area.show');
+        Route::put("/{id}/update", [PlaceController::class, 'updateArea'])->name('area.update');
+        Route::delete("/{id}/delete", [PlaceController::class, 'destroyArea'])->name('area.destroy');
+    });
+
+    Route::group(['prefix' => 'contact-us'], static function () {
+        Route::get('/', [Controller::class, 'contactUsUIndex'])->name('contact-us.index');
+        Route::get('/show', [Controller::class, 'contactUsShow'])->name('contact-us.show');
+    });
+    /*** Area Module : END ***/
 });
 Route::get('/migrate', static function () {
     Artisan::call('migrate');
-    return redirect()->back();
+    echo Artisan::output();
 });
 
-//Route::get('/seeder', static function () {
-//    Artisan::call('db:seed');
-//    return redirect()->back();
-//});
+Route::get('/migrate-rollback', static function () {
+    Artisan::call('migrate:rollback');
+    echo "done";
+});
+
+Route::get('/seeder', static function () {
+    Artisan::call('db:seed --class=SystemUpgradeSeeder');
+    return redirect()->back();
+});
 
 Route::get('clear', static function () {
     Artisan::call('config:clear');
     Artisan::call('view:clear');
     Artisan::call('cache:clear');
     Artisan::call('optimize:clear');
+    Artisan::call('debugbar:clear');
     return redirect()->back();
 });
 
 Route::get('storage-link', static function () {
     Artisan::call('storage:link');
 });
-

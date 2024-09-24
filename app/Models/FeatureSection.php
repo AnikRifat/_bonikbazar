@@ -10,6 +10,7 @@ class FeatureSection extends Model {
 
     protected $fillable = [
         'title',
+        'slug',
         'sequence',
         'filter',
         'value',

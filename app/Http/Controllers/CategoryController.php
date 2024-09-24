@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\CategoryTranslation;
 use App\Models\CustomField;
 use App\Models\CustomFieldCategory;
 use App\Services\BootstrapTableService;
+use App\Services\CachingService;
 use App\Services\FileService;
+use App\Services\HelperService;
 use App\Services\ResponseService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -27,38 +31,58 @@ class CategoryController extends Controller {
     }
 
     public function create(Request $request) {
+        $languages = CachingService::getLanguages()->where('code', '!=', 'en')->values();
         ResponseService::noPermissionThenRedirect('category-create');
         $categories = Category::with('subcategories');
         if (isset($request->id)) {
             $categories = $categories->where('parent_category_id', $request->id)->orWhere('id', $request->id);
         } else {
-            $categories = $categories->where('parent_category_id', null);
+            $categories = $categories->whereNull('parent_category_id');
         }
         $categories = $categories->get();
-        return view('category.create', compact('categories'));
+        return view('category.create', compact('categories', 'languages'));
     }
 
     public function store(Request $request) {
         ResponseService::noPermissionThenSendJson('category-create');
         $request->validate([
-            'name'            => 'required',
-            'image'           => 'required|mimes:jpg,jpeg,png|max:4096',
-            'parent_category' => 'nullable|integer',
-            'description'     => 'nullable',
-            'status'          => 'required|boolean'
+            'name'               => 'required',
+            'image'              => 'required|mimes:jpg,jpeg,png|max:4096',
+            'parent_category_id' => 'nullable|integer',
+            'description'        => 'nullable',
+            'slug'               => 'required',
+            'status'             => 'required|boolean',
+            'translations.*'     => 'required|string',
         ]);
+
         try {
             $data = $request->all();
+            $data['slug'] = HelperService::generateUniqueSlug(new Category(), $request->slug);
+
             if ($request->hasFile('image')) {
                 $data['image'] = FileService::compressAndUpload($request->file('image'), $this->uploadFolder);
             }
-            Category::create($data);
+
+            $category = Category::create($data);
+
+            if (!empty($request->translations)) {
+                foreach ($request->translations as $key => $value) {
+                    if (!empty($value)) {
+                        $category->translations()->create([
+                            'name'        => $value,
+                            'language_id' => $key,
+                        ]);
+                    }
+                }
+            }
+
             ResponseService::successRedirectResponse("Category Added Successfully");
         } catch (Throwable $th) {
             ResponseService::logErrorRedirect($th);
             ResponseService::errorRedirectResponse();
         }
     }
+
 
     public function show(Request $request, $id) {
         ResponseService::noPermissionThenSendJson('category-list');
@@ -88,7 +112,7 @@ class CategoryController extends Controller {
                 $operate .= BootstrapTableService::editButton(route('category.edit', $row->id));
             }
 
-            if ($row->subcategories_count == 0 && $row->custom_fields_count == 0 && Auth::user()->can('category-edit')) {
+            if (Auth::user()->can('category-edit')) {
                 $operate .= BootstrapTableService::deleteButton(route('category.destroy', $row->id));
             }
             $tempRow = $row->toArray();
@@ -102,10 +126,17 @@ class CategoryController extends Controller {
 
     public function edit($id) {
         ResponseService::noPermissionThenRedirect('category-update');
-        $category_data = Category::find($id);
+        $category_data = Category::findOrFail($id);
+        // Fetch translations for the category
+        $translations = $category_data->translations->pluck('name', 'language_id')->toArray();
+
         $parent_category_data = Category::find($category_data->parent_category_id);
         $parent_category = $parent_category_data->name ?? '';
-        return view('category.edit', compact('category_data', 'parent_category'));
+
+        // Fetch all languages
+        $languages = CachingService::getLanguages()->where('code', '!=', 'en')->values();
+
+        return view('category.edit', compact('category_data', 'parent_category', 'translations', 'languages'));
     }
 
     public function update(Request $request, $id) {
@@ -116,19 +147,38 @@ class CategoryController extends Controller {
                 'image'           => 'nullable|mimes:jpg,jpeg,png|max:4096',
                 'parent_category' => 'nullable|integer',
                 'description'     => 'nullable',
-                'status'          => 'nullable|boolean'
+                'slug'            => 'nullable',
+                'status'          => 'required|boolean'
             ]);
-            $category_data = Category::find($id);
+
+            $category = Category::find($id);
 
             $data = $request->all();
             if ($request->hasFile('image')) {
-                $data['image'] = FileService::compressAndReplace($request->file('image'), $this->uploadFolder, $category_data->getRawOriginal('image'));
+                $data['image'] = FileService::compressAndReplace($request->file('image'), $this->uploadFolder, $category->getRawOriginal('image'));
             }
-            $category_data->update($data);
+            $data['slug'] = HelperService::generateUniqueSlug(new Category(), $request->slug, $category->id);
+            $category->update($data);
+
+            if (!empty($request->translations)) {
+                $categoryTranslations = [];
+                foreach ($request->translations as $key => $value) {
+                    $categoryTranslations[] = [
+                        'category_id' => $category->id,
+                        'language_id' => $key,
+                        'name'        => $value,
+                    ];
+                }
+
+                if (count($categoryTranslations) > 0) {
+                    CategoryTranslation::upsert($categoryTranslations, ['category_id', 'language_id'], ['name']);
+                }
+            }
+
             ResponseService::successRedirectResponse("Category Updated Successfully", route('category.index'));
         } catch (Throwable $th) {
             ResponseService::logErrorRedirect($th);
-            ResponseService::errorRedirectResponse('Something Went Wrong ');
+            ResponseService::errorRedirectResponse('Something Went Wrong');
         }
     }
 
@@ -139,9 +189,12 @@ class CategoryController extends Controller {
             if ($category->delete()) {
                 ResponseService::successResponse('Category delete successfully');
             }
+        } catch (QueryException $th) {
+            ResponseService::logErrorResponse($th, 'Failed to delete category', 'Cannot delete category. Remove associated subcategories and custom fields first.');
+            ResponseService::errorResponse('Something Went Wrong');
         } catch (Throwable $th) {
-            ResponseService::logErrorResponse($th);
-            ResponseService::errorResponse('Something Went Wrong ');
+            ResponseService::logErrorResponse($th, "CategoryController -> delete");
+            ResponseService::errorResponse('Something Went Wrong');
         }
     }
 
@@ -163,6 +216,8 @@ class CategoryController extends Controller {
 
     public function getCategoryCustomFields(Request $request, $id) {
         ResponseService::noPermissionThenSendJson('custom-field-list');
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
         $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'ASC');
 
@@ -173,11 +228,10 @@ class CategoryController extends Controller {
         if (isset($request->search)) {
             $sql->search($request->search);
         }
-        $offset = $request->input('offset', 0);
-        $limit = $request->input('limit', 10);
-        $sql->skip($offset)->take($limit);
+
+        $sql->take($limit);
         $total = $sql->count();
-        $res = $sql->get();
+        $res = $sql->skip($offset)->take($limit)->get();
         $bulkData = array();
         $rows = array();
         $tempRow['type'] = '';
@@ -196,7 +250,7 @@ class CategoryController extends Controller {
         return response()->json($bulkData);
     }
 
-    public function destroyCategoryCustomField(Request $request, $categoryID, $customFieldID) {
+    public function destroyCategoryCustomField($categoryID, $customFieldID) {
         try {
             ResponseService::noPermissionThenRedirect('custom-field-delete');
             CustomFieldCategory::where(['category_id' => $categoryID, 'custom_field_id' => $customFieldID])->delete();

@@ -11,8 +11,6 @@ class PaymentTransaction extends Model {
         'amount',
         'payment_gateway',
         'order_id',
-        'payment_id',
-        'payment_signature',
         'payment_status',
         'created_at',
         'updated_at'
@@ -21,5 +19,16 @@ class PaymentTransaction extends Model {
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeSearch($query, $search) {
+        $search = "%" . $search . "%";
+        return $query->where(function ($q) use ($search) {
+            $q->orWhere('id', 'LIKE', $search)
+                ->orWhere('payment_gateway', 'LIKE', $search)
+                ->orWhereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'LIKE', $search);
+                });
+        });
     }
 }

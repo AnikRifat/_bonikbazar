@@ -59,6 +59,7 @@ $('#create-form,.create-form,.create-form-without-reset').on('submit', function 
         if (!$(formElement).hasClass('create-form-without-reset')) {
             formElement[0].reset();
             $(".select2").val("").trigger('change');
+            $('.filepond').filepond('removeFile')
         }
         $('#table_list').bootstrapTable('refresh');
         if (customSuccessFunction) {
@@ -163,7 +164,8 @@ $(document).on('change', '.update-status', function () {
     })
 })
 
-//Fire Ajax request when the the Bootstrap-table rows are rearranged
+
+//Fire Ajax request when the Bootstrap-table rows are rearranged
 $('#table_list').on('reorder-row.bs.table', function (element, rows) {
     let url = $(element.currentTarget).data('custom-reorder-row-url') || window.baseurl + "common/change-row-order";
     ajaxRequest('PUT', url, {
@@ -186,6 +188,17 @@ $('.preview-image-file').on('change', function () {
     const [file] = this.files
     if (file) {
         $('.preview-image').attr('src', URL.createObjectURL(file));
+    }
+})
+
+
+$('.form-redirection').on('submit', function (e) {
+    let parsley = $(this).parsley({
+        excluded: 'input[type=button], input[type=submit], input[type=reset], :hidden'
+    });
+    parsley.validate();
+    if (parsley.isValid()) {
+        $(this).find(':submit').attr('disabled', true);
     }
 })
 

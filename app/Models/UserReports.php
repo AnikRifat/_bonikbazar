@@ -52,14 +52,35 @@ class UserReports extends Model {
 
     public function scopeSort($query, $column, $order) {
         if ($column == "item_name") {
-            return $query->leftjoin('items', 'items.id', '=', 'user_reports.item_id')->orderBy('items.name', $order)->select('user_reports.*', 'items.name');
+            $query = $query->leftjoin('items', 'items.id', '=', 'user_reports.item_id')->orderBy('items.name', $order);
+        } else if ($column == "user_name") {
+            $query = $query->leftjoin('users', 'users.id', '=', 'user_reports.user_id')->orderBy('users.name', $order);
+        } else if ($column == "report_reason_name") {
+            $query = $query->leftjoin('report_reasons', 'report_reasons.id', '=', 'user_reports.report_reason_id')->orderBy('report_reasons.reason', $order);
+        } else {
+            $query = $query->orderBy($column, $order);
         }
-        if ($column == "user_name") {
-            return $query->leftjoin('users', 'users.id', '=', 'user_reports.user_id')->orderBy('users.name', $order)->select('user_reports.*', 'users.name');
-        }
-        if ($column == "report_reason_name") {
-            return $query->leftjoin('report_reasons', 'report_reasons.id', '=', 'user_reports.report_reason_id')->orderBy('report_reasons.reason', $order)->select('user_reports.*', 'report_reasons.reason');
-        }
-        return $query->orderBy($column, $order);
+
+        return $query->select('user_reports.*');
     }
+
+    public function scopeFilter($query, $filterObject) {
+        if (!empty($filterObject)) {
+            foreach ($filterObject as $column => $value) {
+                $query->where((string)$column, (string)$value);
+            }
+        }
+        return $query;
+
+    }
+    public function getStatusAttribute($value) {
+        if ($this->deleted_at) {
+            return "inactive";
+        }
+
+        return $value;
+    }
+
+
+
 }

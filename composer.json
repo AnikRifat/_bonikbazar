@@ -12,8 +12,10 @@
         "ext-curl": "*",
         "ext-openssl": "*",
         "ext-zip": "*",
+        "cerbero/json-parser": "^1.1",
         "dacoto/laravel-wizard-installer": "^1.0",
         "doctrine/dbal": "^3.6",
+        "google/apiclient": "^2.16",
         "guzzlehttp/guzzle": "^7.2",
         "kornrunner/blurhash": "^1.2",
         "laravel/framework": "^10.0",
@@ -21,15 +23,18 @@
         "laravel/tinker": "^2.7",
         "laravel/ui": "^4.0",
         "laravelcollective/html": "^6.3",
+        "nesbot/carbon": "^2.72.3",
         "php-webdriver/webdriver": "^1.14",
+        "rap2hpoutre/laravel-log-viewer": "^2.4",
         "razorpay/razorpay": "2.*",
         "spatie/image": "^2.2",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-permission": "^6.4",
+        "staudenmeir/laravel-adjacency-list": "^1.0",
         "stripe/stripe-php": "^13.14",
         "sunra/php-simple-html-dom-parser": "^1.5",
         "symfony/dom-crawler": "^6.3",
-        "unicodeveloper/laravel-paystack": "^1.0",
+        "unicodeveloper/laravel-paystack": "^1.2",
         "weidner/goutte": "^2.3"
     },
     "require-dev": {
@@ -69,12 +74,16 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
     },
     "extra": {
         "laravel": {
             "dont-discover": []
-        }
+        },
+        "google/apiclient-services": [
+            "FirebaseCloudMessaging"
+        ]
     },
     "config": {
         "optimize-autoloader": true,

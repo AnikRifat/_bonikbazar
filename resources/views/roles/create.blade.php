@@ -23,7 +23,7 @@
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12">
                                     <div class="form-group">
-                                        <label>{{ __('name') }} <span class="text-danger">*</span></label>
+                                        <label>{{ __('Name') }} <span class="text-danger">*</span></label>
                                         {!! Form::text('name', null, ['placeholder' => 'Name', 'class' => 'form-control']) !!}
                                     </div>
                                 </div>
@@ -59,7 +59,7 @@
                                 {{--                                    </div>--}}
                                 {{--                                </div>--}}
                                 <div class="col-xs-12 col-sm-12 col-md-12">
-                                    <button type="submit" class="btn btn-primary">{{ __('submit') }}</button>
+                                    <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
                                 </div>
                             </div>
                             {!! Form::close() !!}

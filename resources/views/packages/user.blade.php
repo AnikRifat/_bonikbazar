@@ -27,7 +27,7 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <table class="table table-borderless table-striped" aria-describedby="mydesc"
+                                <table class="table-borderless table-striped" aria-describedby="mydesc"
                                        id="table_list" data-toggle="table" data-url="{{ route('package.users.show') }}"
                                        data-click-to-select="true" data-side-pagination="server" data-pagination="true"
                                        data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true"
@@ -35,8 +35,10 @@
                                        data-show-refresh="true" data-fixed-columns="true" data-fixed-number="1"
                                        data-fixed-right-number="1" data-trim-on-search="false" data-responsive="true"
                                        data-sort-name="id" data-sort-order="desc" data-pagination-successively-size="3"
+                                       data-escape="true"
                                        data-query-params="queryParams" data-table="packages"
-                                       data-show-export="true" data-export-options='{"fileName": "user-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
+                                       data-show-export="true" data-export-options='{"fileName": "user-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
+                                       data-mobile-responsive="true">
                                     <thead class="thead-dark">
                                     <tr>
                                         <th scope="col" data-field="id" data-align="center" data-sortable="true">{{ __('ID') }}</th>

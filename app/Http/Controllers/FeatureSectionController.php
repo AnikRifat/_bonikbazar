@@ -23,6 +23,7 @@ class FeatureSectionController extends Controller {
         ResponseService::noPermissionThenSendJson('feature-section-create');
         $validator = Validator::make($request->all(), [
             'title'       => 'required',
+            'slug'        => 'required',
             'filter'      => 'required|in:most_liked,most_viewed,price_criteria,category_criteria',
             'style'       => 'required|in:style_1,style_2,style_3,style_4',
             'min_price'   => 'required_if:filter,price_criteria',
@@ -73,7 +74,7 @@ class FeatureSectionController extends Controller {
         $bulkData = array();
         $bulkData['total'] = $total;
         $rows = array();
-        foreach ($result as $key => $row) {
+        foreach ($result as $row) {
             $tempRow = $row->toArray();
             $operate = '';
             if (Auth::user()->can('feature-section-update')) {
@@ -94,6 +95,7 @@ class FeatureSectionController extends Controller {
         ResponseService::noPermissionThenSendJson('feature-section-update');
         $validator = Validator::make($request->all(), [
             'title'       => 'required',
+            'slug'        => 'required',
             'filter'      => 'required|in:most_liked,most_viewed,price_criteria,category_criteria',
             'style'       => 'required|in:style_1,style_2,style_3,style_4',
             'min_price'   => 'required_if:filter,price_criteria',
