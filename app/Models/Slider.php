@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Slider extends Model {
     use HasFactory;
 
-    protected $fillable = ['image', 'item_id', 'third_party_link', 'sequence'];
+    protected $fillable = ['image', 'item_id', 'third_party_link', 'sequence','name', 'sold_out'];
 
     public function item() {
         return $this->belongsTo(Item::class);
@@ -37,8 +38,19 @@ class Slider extends Model {
 
     public function scopeSort($query, $column, $order) {
         if ($column == "item_name") {
-            return $query->leftjoin('items', 'items.id', '=', 'sliders.item_id')->orderBy('items.name', $order)->select('sliders.*');
+            $query = $query->leftjoin('items', 'items.id', '=', 'sliders.item_id')->orderBy('items.name', $order);
+        } else {
+            $query = $query->orderBy($column, $order);
         }
-        return $query->orderBy($column, $order);
+        return $query->select('sliders.*');
     }
+    public function categories() {
+        return $this->hasOne(Category::class);
+    }
+
+    public function model(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
 }

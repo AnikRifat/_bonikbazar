@@ -46,7 +46,7 @@
 <link rel="stylesheet" href="{{ asset('assets/css/pages/jquery-jvectormap-2.0.5.css') }}" type="text/css"/>
 
 {{--JS Tree--}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
+<link rel="stylesheet" href="{{asset('assets/extensions/jstree/jstree.min.css')}}"/>
 
 {{--<link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>--}}
 {{--<link rel="stylesheet" href="{{ url('assets/extensions/chosen.css') }}"/>--}}

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Notifications;
-use App\Models\Setting;
-use App\Models\User;
+use App\Models\UserFcmToken;
 use App\Services\BootstrapTableService;
+use App\Services\CachingService;
 use App\Services\FileService;
 use App\Services\NotificationService;
 use App\Services\ResponseService;
@@ -50,7 +50,7 @@ class NotificationController extends Controller {
             ResponseService::validationError($validator->errors()->first());
         }
         try {
-            $get_fcm_key = Setting::select('value')->where('name', 'fcm_key')->first();
+            $get_fcm_key = CachingService::getSystemSettings('fcm_key');
             if (!empty($get_fcm_key->data)) {
                 ResponseService::errorResponse('Server FCM Key Is Missing');
             }
@@ -60,18 +60,24 @@ class NotificationController extends Controller {
                 'user_id' => $request->send_to == "selected" ? $request->user_id : ''
             ]);
             if ($request->send_to == "selected") {
-                $fcm_ids = explode(',', $request->fcm_id);
+                $fcm_ids = UserFcmToken::select('fcm_token')->whereIn('user_id', explode(',', $request->user_id))->pluck('fcm_token')->toArray();
             } else {
-                $fcm_ids = User::select(['fcm_id'])->where('notification', 1)->where("fcm_id", "!=", "")->pluck('fcm_id')->toArray();
+                $fcm_ids = UserFcmToken::whereHas('user', static function ($q) {
+                    $q->where('notification', 1);
+                })->select('fcm_token')->pluck('fcm_token')->toArray();
             }
-
             if (!empty($fcm_ids)) {
                 $registrationIDs = array_filter($fcm_ids);
-                NotificationService::sendFcmNotification((array)$registrationIDs, $request->title, $request->message, [
-                    "image" => $notification->image
+                $notification = NotificationService::sendFcmNotification($registrationIDs, $request->title, $request->message, "notification", [
+                    "image"   => $notification->image,
+                    "item_id" => $notification->item_id,
                 ]);
+
+                if (!$notification) {
+                    ResponseService::warningResponse('FCM Settings are not configured');
+                }
             }
-            ResponseService::successResponse('Message Send Successfully');
+            ResponseService::successResponse('Message Send Successfully', $notification);
 
         } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, 'NotificationController -> store');

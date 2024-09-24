@@ -35,4 +35,8 @@ class FeaturedItems extends Model {
         }
         return $image;
     }
+    public function item()
+    {
+        return $this->belongsTo(Item::class);
+    }
 }

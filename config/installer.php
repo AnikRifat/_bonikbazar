@@ -96,7 +96,7 @@ return [
     ],
 
     'commands' => [
-        'db:seed --class=DatabaseSeeder'
+        'db:seed'
     ],
 
     'admin_area' => [

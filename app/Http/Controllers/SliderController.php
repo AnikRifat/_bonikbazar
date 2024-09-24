@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\Slider;
 use App\Services\BootstrapTableService;
@@ -24,11 +25,17 @@ class SliderController extends Controller {
     public function index() {
         ResponseService::noAnyPermissionThenRedirect(['slider-list', 'slider-create', 'slider-update', 'slider-delete']);
         $slider = Slider::select(['id', 'image', 'sequence'])->orderBy('sequence', 'ASC')->get();
-        $items = Item::all();
-        return view('slider.index', compact('slider', 'items'));
+        $items = Item::where('status', 'approved')->get();
+        $categories = Category::where('status', 1)->get();
+        return view('slider.index', compact('slider', 'items', 'categories'));
     }
 
     public function store(Request $request) {
+
+        if (!$request->filled('category_id') && !$request->filled('item') && !$request->filled('link')) {
+            return ResponseService::validationError('At least one of the fields (Category, Item, or Third Party Link) is required.');
+        }
+
         ResponseService::noPermissionThenRedirect('slider-create');
         $validator = Validator::make($request->all(), [
             'image.*' => 'required|image|mimes:jpg,png,jpeg|max:2048',
@@ -36,16 +43,29 @@ class SliderController extends Controller {
         if ($validator->fails()) {
             ResponseService::validationError($validator->errors()->first());
         }
-
         try {
+
             $lastSequence = Slider::max('sequence');
             $nextSequence = $lastSequence + 1;
-            Slider::create([
+            $slider = Slider::create([
                 'image'            => $request->hasFile('image') ? FileService::compressAndUpload($request->file('image'), $this->uploadFolder) : '',
-                'item_id'          => $request->item ?? '',
                 'third_party_link' => $request->link ?? '',
                 'sequence'         => $nextSequence
             ]);
+
+
+            if ($request->filled('category_id')) {
+                $category = Category::find($request->category_id);
+                $slider->model()->associate($category)->save();
+            } else {
+                // Handle other cases if necessary
+            }
+            if ($request->filled('item')) {
+                $item = Item::find($request->item);
+                $slider->model()->associate($item)->save();
+            } else {
+                // Handle other cases if necessary
+            }
             ResponseService::successResponse('Slider created successfully');
         } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, "Slider Controller -> store");
@@ -79,7 +99,7 @@ class SliderController extends Controller {
         $limit = $request->limit ?? 10;
         $sort = $request->sort ?? 'id';
         $order = $request->order ?? 'DESC';
-        $sql = Slider::with('item')->sort($sort, $order);
+        $sql = Slider::with('model')->sort($sort, $order);
         if (!empty($request->search)) {
             $sql = $sql->search($request->search);
         }

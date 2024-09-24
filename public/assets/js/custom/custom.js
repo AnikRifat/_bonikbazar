@@ -243,19 +243,13 @@ $("#include_image").change(function () {
 
 
 $('#user_notification_list').on('check.bs.table  uncheck.bs.table', function () {
-    let fcm_list = [];
     let user_list = [];
     let data = $("#user_notification_list").bootstrapTable('getSelections');
     data.forEach(function (value) {
-        if (value.fcm_id != "") {
-            fcm_list.push(value.fcm_id);
-        }
         if (value.id != "") {
             user_list.push(value.id);
         }
     })
-
-    $('textarea#fcm_id').text(fcm_list);
     $('textarea#user_id').text(user_list);
 });
 
@@ -354,5 +348,254 @@ $(".toggle-password").on('click', function () {
     }
 });
 
+$('#price,#discount_in_percentage').on('input', function () {
+    let price = $('#price').val();
+    let discount = $('#discount_in_percentage').val();
+    let final_price = calculateDiscountedAmount(price, discount);
+    $('#final_price').val(final_price);
+})
+
+$('#final_price').on('input', function () {
+    let discountedPrice = $(this).val();
+    let price = $('#price').val();
+    let discount = calculateDiscount(price, discountedPrice);
+    $('#discount_in_percentage').val(discount);
+})
 
 
+$('#edit_price,#edit_discount_in_percentage').on('input', function () {
+    let price = $('#edit_price').val();
+    let discount = $('#edit_discount_in_percentage').val();
+    let final_price = calculateDiscountedAmount(price, discount);
+    $('#edit_final_price').val(final_price);
+})
+
+$('#edit_final_price').on('input', function () {
+    let discountedPrice = $(this).val();
+    let price = $('#edit_price').val();
+    let discount = calculateDiscount(price, discountedPrice);
+    $('#edit_discount_in_percentage').val(discount);
+})
+$('#slug').bind('keyup blur', function () {
+    $(this).val($(this).val().replace(/[^A-Za-z0-9-]/g, ''))
+});
+
+function toggleRejectedReasonVisibility() {
+    var status = $('#status').val();
+    var rejectedReasonContainer = $('#rejected_reason_container');
+    if (status === 'rejected') {
+        rejectedReasonContainer.show();
+    } else {
+        rejectedReasonContainer.hide();
+    }
+}
+
+$('.editdata, #status').on('click change', function () {
+    toggleRejectedReasonVisibility();
+});
+
+$(document).on('change', '.update-item-status', function () {
+    let url = window.baseurl + "common/change-status";
+    ajaxRequest('PUT', url, {
+        id: $(this).attr('id'),
+        table: "items",
+        column: "deleted_at",
+        status: $(this).is(':checked') ? 1 : 0
+    }, null, function (response) {
+        showSuccessToast(response.message);
+    }, function (error) {
+        showErrorToast(error.message);
+    })
+})
+
+$(document).on('change', '.update-user-status', function () {
+    let url = window.baseurl + "common/change-status";
+    ajaxRequest('PUT', url, {
+        id: $(this).attr('id'),
+        table: "users",
+        column: "deleted_at",
+        status: $(this).is(':checked') ? 1 : 0
+    }, null, function (response) {
+        showSuccessToast(response.message);
+    }, function (error) {
+        showErrorToast(error.message);
+    })
+})
+
+$('#switch_banner_ad_status').on('change', function () {
+    $('#banner_ad_id_android').attr('required', $(this).is(':checked'));
+    $('#banner_ad_id_ios').attr('required', $(this).is(':checked'));
+})
+
+$('.package_type').on('change', function () {
+    if ($(this).val() == 'item_listing') {
+        $('#item-listing-package-div').show();
+        $('#advertisement-package-div').hide();
+
+        $('#item-listing-package').attr('required', true);
+        $('#advertisement-package').attr('required', false);
+    } else if ($(this).val() == 'advertisement') {
+        $('#item-listing-package-div').hide();
+        $('#advertisement-package-div').show();
+
+        $('#advertisement-package').attr('required', true);
+        $('#item-listing-package').attr('required', false);
+    }
+});
+
+$('.package').on('change', function () {
+    let package_detail = $(this).find('option:selected').data('details');
+    if (package_detail != null) {
+        $('#package_details').show();
+        $('.payment').show();
+    } else {
+        $('#package_details').hide();
+        $('.payment').hide();
+        $('.cheque').hide();
+    }
+    $("#package_name").text(package_detail?.name);
+    $("#package_price").text(package_detail?.price);
+    $("#package_final_price").text(package_detail?.final_price);
+    $("#package_duration").text(package_detail?.duration);
+});
+$('.payment_gateway').change(function () {
+    if ($(this).val() == 'cheque') {
+        $('.cheque').show();
+    } else {
+        $('.cheque').hide();
+    }
+
+    $('.payment').val('').trigger('change');
+});
+
+
+$('#switch_interstitial_ad_status').on('change', function () {
+    $('#interstitial_ad_id_android').attr('required', $(this).is(':checked'));
+    $('#interstitial_ad_id_ios').attr('required', $(this).is(':checked'));
+})
+
+$('#country').on('change', function () {
+    let countryId = $(this).val();
+    let url = window.baseurl + 'states/search?country_id=' + countryId;
+    ajaxRequest('GET', url, null, null, function (response) {
+        $('#state').html("<option value=''>" + window.trans("--Select State--") + "</option>")
+        $.each(response.data, function (key, value) {
+            $('#state').append($('<option>', {
+                value: value.id,
+                text: value.name
+            }));
+        });
+    })
+});
+
+$('#state').on('change', function () {
+    let stateId = $(this).val();
+    let url = window.baseurl + 'cities/search?state_id=' + stateId;
+    ajaxRequest('GET', url, null, null, function (response) {
+        $('#city').html("<option value=''>" + window.trans("--Select City--") + "</option>")
+        $.each(response.data, function (key, value) {
+            $('#city').append($('<option>', {
+                value: value.id,
+                text: value.name
+            }));
+        });
+    })
+});
+
+$('#filter_country').on('change', function () {
+    let countryId = $(this).val();
+    let url = window.baseurl + 'states/search?country_id=' + countryId;
+    ajaxRequest('GET', url, null, null, function (response) {
+        $('#filter_state').html("<option value=''>" + window.trans("All") + "</option>")
+        $.each(response.data, function (key, value) {
+            $('#filter_state').append($('<option>', {
+                value: value.id,
+                text: value.name
+            }));
+        });
+    })
+});
+
+$('#filter_state').on('change', function () {
+    let stateId = $(this).val();
+    let url = window.baseurl + 'cities/search?state_id=' + stateId;
+    ajaxRequest('GET', url, null, null, function (response) {
+        $('#filter_city').html("<option value=''>" + window.trans("All") + "</option>")
+        $.each(response.data, function (key, value) {
+            $('#filter_city').append($('<option>', {
+                value: value.id,
+                text: value.name
+            }));
+        });
+    })
+});
+
+$(document).ready(function () {
+    const $addAreaButton = $('#add-area-button');
+    const $areasContainer = $('#areas-container');
+
+    $addAreaButton.on('click', function () {
+        const $newAreaInputGroup = $(`
+            <div class="area-input-group col-md-12">
+                <label for="name" class="mandatory form-label mt-2"> Area Name</label>
+                <div class="d-flex">
+                    <input type="text" name="name[]" class="form-control me-2" placeholder="Enter Area name">
+                    <button type="button" class="btn btn-danger remove-area-button ">-</button>
+                </div>
+            </div>
+        `);
+        $areasContainer.append($newAreaInputGroup);
+    });
+
+    // Event delegation to handle dynamically added remove buttons
+    $areasContainer.on('click', '.remove-area-button', function () {
+        $(this).closest('.area-input-group').remove();
+    });
+});
+
+$('#switch_stripe_gateway').on('change', function () {
+    let status = $(this).prop('checked');
+    $('[name^="gateway[Stripe]"]').each(function () {
+        $(this).prop('required', status);
+    });
+});
+
+$('#switch_razorpay_gateway').on('change', function () {
+    let status = $(this).prop('checked');
+    $('[name^="gateway[Razorpay]"]').each(function () {
+        $(this).prop('required', status);
+    });
+});
+
+$('#switch_paystack_gateway').on('change', function () {
+    let status = $(this).prop('checked');
+    $('[name^="gateway[Paystack]"]').each(function () {
+        $(this).prop('required', status);
+    });
+});
+
+$('#google_map_iframe_link').on('input', function () {
+    try {
+        let element = $(this).val();
+        let src = $(element).attr('src');
+        $(this).val(src);
+    } catch (err) {
+        $(this).val("");
+        showErrorToast("Please enter a valid map iframe")
+    }
+
+});
+$('#category_name').on('input', function () {
+    let slug = generateSlug($(this).val())
+    $('#category_slug').val(slug);
+});
+
+$('.feature-section-name').on('input', function () {
+    let slug = generateSlug($(this).val());
+    $('.feature-section-slug').val(slug);
+});
+
+$('.edit-feature-section-name').on('input', function () {
+    let slug = generateSlug($(this).val());
+    $('.edit-feature-section-slug').val(slug);
+});

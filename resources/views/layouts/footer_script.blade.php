@@ -4,9 +4,9 @@
 <script type="text/javascript" src="{{ asset('assets/js/app.js') }}"></script>
 
 {{-- Firebasejs 8.10.0--}}
-<script type="text/javascript" src="{{ asset('assets/js/firebase-app.js')}}"></script>
-<script type="text/javascript" src="{{ asset('assets/js/firebase-messaging.js')}}"></script>
-<script type="text/javascript" src="{{ asset('assets/js/custom/firebase_config.js') }}"></script>
+{{--<script type="text/javascript" src="{{ asset('assets/js/firebase-app.js')}}"></script>--}}
+{{--<script type="text/javascript" src="{{ asset('assets/js/firebase-messaging.js')}}"></script>--}}
+
 
 {{--Sweet Alert --}}
 <script type="text/javascript" src="{{ asset('assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
@@ -50,7 +50,7 @@
 <script type="text/javascript" src="{{ asset('assets/extensions/filepond/filepond-plugin-image-validate-size.min.js') }}"></script>
 
 {{--JS Tree--}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+<script src="{{asset("assets/extensions/jstree/jstree.min.js")}}"></script>
 
 
 {{-- Custom JS --}}
@@ -69,9 +69,11 @@
 <script type="text/javascript" src="{{ asset('assets/extensions/bootstrap-table/jquery.tablednd.min.js')}}"></script>
 <script type="text/javascript" src="{{ asset('assets/extensions/bootstrap-table/bootstrap-table.min.js')}}"></script>
 <script type="text/javascript" src="{{ asset('assets/extensions/bootstrap-table/bootstrap-table-reorder-rows.min.js')}}"></script>
-<script src="{{asset('assets/extensions/bootstrap-table/export/bootstrap-table-export.min.js')}}"></script>
-<script src="{{asset('assets/extensions/bootstrap-table/export/tableExport.min.js')}}"></script>
-<script src="{{asset('assets/extensions/bootstrap-table/export/jspdf.umd.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('assets/extensions/bootstrap-table/export/bootstrap-table-export.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('assets/extensions/bootstrap-table/export/tableExport.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('assets/extensions/bootstrap-table/export/jspdf.umd.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('assets/extensions/bootstrap-table/mobile/bootstrap-table-mobile.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('assets/extensions/bootstrap-table/filter/bootstrap-table-filter-control.min.js')}}"></script>
 
 {{--Language Translation--}}
 <script src="{{route('common.language.read')}}"></script>

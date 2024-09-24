@@ -44,7 +44,11 @@ Route::group(['middleware' => ['auth:sanctum']], static function () {
     Route::post('send-message', [ApiController::class, 'sendMessage']);
     Route::get('chat-messages', [ApiController::class, 'getChatMessages']);
 
-    Route::get('in-app-purchase', [ApiController::class, 'inAppPurchase']);
+    Route::post('in-app-purchase', [ApiController::class, 'inAppPurchase']);
+
+    Route::post('block-user', [ApiController::class, 'blockUser']);
+    Route::post('unblock-user', [ApiController::class, 'unblockUser']);
+    Route::get('blocked-users', [ApiController::class, 'getBlockedUsers']);
 });
 
 
@@ -60,4 +64,17 @@ Route::get('get-item', [ApiController::class, 'getItem']);
 Route::get('get-slider', [ApiController::class, 'getSlider']);
 Route::get('get-report-reasons', [ApiController::class, 'getReportReasons']);
 Route::get('get-categories', [ApiController::class, 'getCategories']);
+Route::get('get-parent-categories', [ApiController::class, 'getParentCategoryTree']);
 Route::get('get-featured-section', [ApiController::class, 'getFeaturedSection']);
+Route::get('blogs', [ApiController::class, 'getBlog']);
+Route::get('blog-tags', [ApiController::class, 'getAllBlogTags']);
+Route::get('faq', [ApiController::class, 'getFaqs']);
+Route::get('tips', [ApiController::class, 'getTips']);
+Route::get('countries', [ApiController::class, 'getCountries']);
+Route::get('states', [ApiController::class, 'getStates']);
+Route::get('cities', [ApiController::class, 'getCities']);
+Route::get('areas', [ApiController::class, 'getAreas']);
+Route::post('contact-us', [ApiController::class, 'storeContactUs']);
+
+
+

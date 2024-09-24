@@ -5,4 +5,5 @@
     name="{{ $attributes->get('name') }}"
     value="{{ $attributes->get('value') }}"
     {{ $attributes->merge(['required' => $attributes->get('required', false) ? 'required' : null ]) }}
+    aria-label=""
 >

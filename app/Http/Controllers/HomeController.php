@@ -77,6 +77,14 @@ class HomeController extends Controller {
     }
 
     public function changeProfileUpdate(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name'    => 'required',
+            'email'   => 'required|email|unique:users,email,' . Auth::user()->id,
+            'profile' => 'nullable|mimes:jpeg,jpg,png'
+        ]);
+        if ($validator->fails()) {
+            ResponseService::validationError($validator->errors()->first());
+        }
         try {
             $user = Auth::user();
             $data = [

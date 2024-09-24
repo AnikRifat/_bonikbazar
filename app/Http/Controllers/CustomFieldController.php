@@ -9,6 +9,7 @@ use App\Services\BootstrapTableService;
 use App\Services\FileService;
 use App\Services\HelperService;
 use App\Services\ResponseService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -87,46 +88,51 @@ class CustomFieldController extends Controller {
     }
 
     public function show(Request $request) {
-        ResponseService::noPermissionThenSendJson('custom-field-list');
-        $offset = $request->input('offset', 0);
-        $limit = $request->input('limit', 15);
-        $sort = $request->input('sort', 'id');
-        $order = $request->input('order', 'DESC');
+        try {
+            ResponseService::noPermissionThenSendJson('custom-field-list');
+            $offset = $request->input('offset', 0);
+            $limit = $request->input('limit', 15);
+            $sort = $request->input('sort', 'id');
+            $order = $request->input('order', 'DESC');
 
-        $sql = CustomField::with('categories:id,name');
-        if (!empty($request->category_id)) {
-            $sql->whereHas('custom_field_category', function ($q) use ($request) {
-                $q->where('category_id', $request->category_id);
-            });
-        }
-        if (!empty($request->search)) {
-            $sql = $sql->search($request->search);
-        }
-        $total = $sql->count();
-        $sql->orderBy($sort, $order)->skip($offset)->take($limit);
-        $result = $sql->get();
-        $bulkData = array();
-        $bulkData['total'] = $total;
-        $rows = array();
-
-        foreach ($result as $key => $row) {
-            $operate = '';
-            if (Auth::user()->can('custom-field-update')) {
-                $operate .= BootstrapTableService::editButton(route('custom-fields.edit', $row->id));
+            $sql = CustomField::orderBy($sort, $order)->skip($offset)->take($limit);
+            $sql->with('categories:id,name');
+            if (!empty($request->filter)) {
+                $sql = $sql->filter(json_decode($request->filter, false, 512, JSON_THROW_ON_ERROR));
             }
 
-            if (count($row->categories) == 0 && Auth::user()->can('custom-field-delete')) {
-                $operate .= BootstrapTableService::deleteButton(route('custom-fields.destroy', $row->id));
+            if (!empty($request->search)) {
+                $sql = $sql->search($request->search);
             }
-            $tempRow = $row->toArray();
-            $tempRow['operate'] = $operate;
-            $tempRow['category_names'] = array_column($row->categories->toArray(), 'name');
-            $rows[] = $tempRow;
+            $total = $sql->count();
+            $result = $sql->get();
+            $bulkData = array();
+            $bulkData['total'] = $total;
+            $rows = array();
+
+            foreach ($result as $key => $row) {
+                $operate = '';
+                if (Auth::user()->can('custom-field-update')) {
+                    $operate .= BootstrapTableService::editButton(route('custom-fields.edit', $row->id));
+                }
+
+                if (Auth::user()->can('custom-field-delete')) {
+                    $operate .= BootstrapTableService::deleteButton(route('custom-fields.destroy', $row->id));
+                }
+                $tempRow = $row->toArray();
+                $tempRow['operate'] = $operate;
+                $tempRow['category_names'] = array_column($row->categories->toArray(), 'name');
+                $rows[] = $tempRow;
+            }
+            $bulkData['rows'] = $rows;
+
+
+            return response()->json($bulkData);
+        } catch (Throwable $e) {
+            ResponseService::logErrorResponse($e, "CustomFieldController -> show");
+            ResponseService::errorResponse('Something Went Wrong');
         }
-        $bulkData['rows'] = $rows;
 
-
-        return response()->json($bulkData);
     }
 
     public function edit($id) {
@@ -205,9 +211,12 @@ class CustomFieldController extends Controller {
             ResponseService::noPermissionThenSendJson('custom-field-delete');
             CustomField::find($id)->delete();
             ResponseService::successResponse('Custom Field delete successfully');
+        } catch (QueryException $th) {
+            ResponseService::logErrorResponse($th, "Custom Field Controller -> destroy");
+            ResponseService::errorResponse('Cannot delete custom field! Remove associated subcategories first');
         } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, "Custom Field Controller -> destroy");
-            ResponseService::errorResponse('Something Went Wrong ');
+            ResponseService::errorResponse('Something Went Wrong');
         }
     }
 

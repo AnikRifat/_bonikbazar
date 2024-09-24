@@ -1,7 +1,3 @@
-@php
-    $lang = Session::get('language');
-@endphp
-
 @extends('layouts.main')
 
 @section('title')
@@ -43,21 +39,24 @@
                                         </div>
 
                                         <div class="col-sm-12 col-md-12 form-group mandatory ">
+                                            {{ Form::label('Language Name', __('Language Name'). " (".__("in English").")", ['class' => 'form-label text-center']) }}
+                                            {{ Form::text('name_in_english', '', ['class' => 'form-control', 'placeholder' => __('Language Name')." (".__("in English").")", 'data-parsley-required' => 'true']) }}
+                                        </div>
+
+                                        <div class="col-sm-12 col-md-12 form-group mandatory ">
                                             {{ Form::label('Language Code', __('Language Code'), ['class' => 'form-label text-center']) }}
                                             {{ Form::text('code', '', ['class' => 'form-control', 'placeholder' => __('Language Code'), 'data-parsley-required' => 'true']) }}
                                         </div>
-                                        <div class="col-sm-12 col-md-12 form-group">
-                                            <div class="form-group row">
-                                                <label class="col-form-label ">{{ __('Image') }}</label>
-                                                <div class="">
-                                                    <input class="filepond" type="file" name="image" id="favicon_icon">
-                                                </div>
+                                        <div class="col-sm-12 col-md-12 form-group mandatory">
+                                            <label class="form-label ">{{ __('Image') }}</label>
+                                            <div class="">
+                                                <input class="filepond" type="file" name="image" id="favicon_icon">
                                             </div>
                                         </div>
                                         <div class="col-sm-1 col-md-12">
                                             {{ Form::label('file', __('RTL'), ['class' => 'col-form-label text-center']) }}
                                             <div class="form-check form-switch col-12" style='padding-right:12.5rem;'>
-                                                {{ Form::checkbox('rtl', '', false, ['class' => 'form-check-input']) }}
+                                                {{ Form::checkbox('rtl', '', false, ['class' => 'form-check-input','id'=>'rtl']) }}
                                             </div>
                                         </div>
                                     </div>
@@ -71,15 +70,20 @@
                                             {{ Form::file('app_file', ['class' => 'form-control', 'data-parsley-required' => 'true', 'accept' => '.json']) }}
                                         </div>
 
-                                        <div class="col-sm-1 col-md-6">
-                                            {{ Form::label('file', __('Sample for Admin Panel'), ['class' => 'col-form-label text-center']) }}
+                                        <div class="col-sm-2 col-md-12  form-group mandatory">
+                                            {{ Form::label('file', __('File For Web'), ['class' => 'form-label text-center', 'accept' => '.json.*']) }}
+                                            {{ Form::file('web_file', ['class' => 'form-control', 'data-parsley-required' => 'true', 'accept' => '.json']) }}
+                                        </div>
+
+                                        <div class="col-sm-1 col-md-4">
+                                            {{ Form::label('file', __('Sample for Admin'), ['class' => 'col-form-label text-center']) }}
                                             <div class="form-check form-switch col-12" style='padding-right:12.5rem;'>
                                                 <a class="btn icon btn-primary btn-sm rounded-pill" href="{{ route('language.download.panel.json') }}" title="Edit">
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                             </div>
                                         </div>
-                                        <div class="col-sm-1 col-md-6">
+                                        <div class="col-sm-1 col-md-4">
                                             {{ Form::label('file', __('Sample For App'), ['class' => 'col-form-label text-center']) }}
                                             <div class="form-check form-switch col-12" style='padding-right:12.5rem;'>
                                                 <a class="btn icon btn-primary btn-sm rounded-pill" href="{{ route('language.download.app.json') }}" title="Edit">
@@ -88,7 +92,16 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-sm-12 d-flex justify-content-end">
+                                        <div class="col-sm-1 col-md-4">
+                                            {{ Form::label('file', __('Sample For Web'), ['class' => 'col-form-label text-center']) }}
+                                            <div class="form-check form-switch col-12" style='padding-right:12.5rem;'>
+                                                <a class="btn icon btn-primary btn-sm rounded-pill" href="{{ route('language.download.web.json') }}" title="Edit">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-12 d-flex justify-content-end mt-3">
                                             {{ Form::submit(__('Save'), ['class' => 'btn btn-primary me-1 mb-1']) }}
                                         </div>
                                     </div>
@@ -112,15 +125,17 @@
                                        data-fixed-columns="true" data-fixed-number="1" data-fixed-right-number="1"
                                        data-trim-on-search="false" data-responsive="true" data-sort-name="id"
                                        data-sort-order="desc" data-pagination-successively-size="3"
-                                       data-query-params="queryParams">
+                                       data-escape="true"
+                                       data-query-params="queryParams" data-mobile-responsive="true">
                                     <thead>
                                     <tr>
                                         <th scope="col" data-field="id" data-sortable="true">{{ __('ID') }}</th>
                                         <th scope="col" data-field="name" data-sortable="false">{{ __('Name') }}</th>
+                                        <th scope="col" data-field="name_in_english" data-sortable="false">{{ __('Name'). " (".__("in English").")" }}</th>
                                         <th scope="col" data-field="code" data-sortable="true">{{ __('Language Code') }}</th>
-                                        <th scope="col" data-field="rtl" data-sortable="true">{{ __('RTL') }}
+                                        <th scope="col" data-field="rtl_text" data-sortable="true">{{ __('RTL') }}
                                         <th scope="col" data-field="image" data-sortable="false" data-formatter="imageFormatter">{{ __('Image') }}
-                                        <th scope="col" data-field="operate" data-sortable="false" data-events="languageEvents">{{ __('Action') }}</th>
+                                        <th scope="col" data-field="operate" data-escape="false" data-sortable="false" data-events="languageEvents">{{ __('Action') }}</th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -151,6 +166,15 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-sm-12">
+                                <div class="col-md-12 col-12">
+                                    <div class="form-group mandatory">
+                                        <label for="edit_name_in_english" class="form-label col-12">{{ __('Language Name') }}({{__("in English")}})</label>
+                                        <input type="text" id="edit_name_in_english" class="form-control col-12" placeholder="{{__("Name")}}" name="name_in_english" data-parsley-required="true">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-sm-12">
                                 <div class="col-md-12 col-12">
                                     <div class="form-group mandatory">
@@ -160,11 +184,9 @@
                                 </div>
                             </div>
                             <div class="col-sm-12 col-md-12 form-group">
-                                <div class="form-group row">
-                                    <label class="col-form-label ">{{ __('Image') }}</label>
-                                    <div class="">
-                                        <input class="filepond" type="file" name="image" id="edit_image">
-                                    </div>
+                                <label class="col-form-label ">{{ __('Image') }}</label>
+                                <div class="">
+                                    <input class="filepond" type="file" name="image" id="edit_image">
                                 </div>
                             </div>
                             <div class="col-sm-12">
@@ -183,12 +205,21 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-sm-12">
+                                <div class="col-md-12 col-12">
+                                    <div class="form-group">
+                                        <label for="edit_web_file" class="form-label col-12">{{ __('File For Web') }}</label>
+                                        <input type="file" id="edit_web_file" class="form-control col-12" name="web_file">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-sm-12">
                                 <div class="col-md-12 col-12">
                                     <div class="form-group form-check form-switch">
                                         <label for="edit_rtl" class="form-label col-12">{{ __('RTL') }}</label>
                                         <input type="hidden" value="0" name="rtl" id="edit_rtl">
-                                        <input type="checkbox" class="form-check-input status-switch" aria-label="edit_rtl">
+                                        <input type="checkbox" class="form-check-input status-switch" id="edit_rtl_switch" aria-label="edit_rtl">
                                     </div>
                                 </div>
                             </div>
@@ -201,8 +232,5 @@
                 </div>
             </form>
         </div>
-        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
-    <!-- EDIT MODEL -->
 @endsection

@@ -28,14 +28,14 @@ class BootstrapTableService {
     /**
      * @param $url
      * @param bool $modal
-     * @param null $dataBsTarget
+     * @param string $dataBsTarget
      * @param null $customClass
      * @param null $id
-     * @param null $iconClass
+     * @param string $iconClass
      * @param null $onClick
      * @return string
      */
-    public static function editButton($url, bool $modal = false, $dataBsTarget = null, $customClass = null, $id = null, $iconClass = null, $onClick = null) {
+    public static function editButton($url, bool $modal = false, $dataBsTarget = "#editModal", $customClass = null, $id = null, $iconClass = "fa fa-edit", $onClick = null) {
         $customClass = ["btn-primary" . " " . $customClass];
         $customAttributes = [
             "title" => trans("Edit")
@@ -43,7 +43,7 @@ class BootstrapTableService {
         if ($modal) {
             $customAttributes = [
                 "title"          => "Edit",
-                "data-bs-target" => $dataBsTarget ?? "#editModal",
+                "data-bs-target" => $dataBsTarget,
                 "data-bs-toggle" => "modal",
                 "id"             => $id,
                 "onclick"        => $onClick,
@@ -51,8 +51,6 @@ class BootstrapTableService {
 
             $customClass[] = "edit_btn set-form-url";
         }
-
-        $iconClass = $iconClass ?? "fa fa-edit";
         return self::button($iconClass, $url, $customClass, $customAttributes);
     }
 

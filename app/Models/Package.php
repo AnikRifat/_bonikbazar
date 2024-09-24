@@ -12,7 +12,8 @@ class Package extends Model {
     protected $fillable = [
         'name',
         'price',
-        'discount_price',
+        'discount_in_percentage',
+        'final_price',
         'duration',
         'item_limit',
         'type',
@@ -38,7 +39,8 @@ class Package extends Model {
         $query = $query->where(function ($q) use ($search) {
             $q->orWhere('name', 'LIKE', $search)
                 ->orWhere('price', 'LIKE', $search)
-                ->orWhere('discount_price', 'LIKE', $search)
+                ->orWhere('discount_in_percentage', 'LIKE', $search)
+                ->orWhere('final_price', 'LIKE', $search)
                 ->orWhere('duration', 'LIKE', $search)
                 ->orWhere('item_limit', 'LIKE', $search)
                 ->orWhere('type', 'LIKE', $search)

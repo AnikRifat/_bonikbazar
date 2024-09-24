@@ -45,33 +45,48 @@
                                     </div>
 
                                     <div class="col-md-6 col-12 form-group mandatory">
-                                        {{ Form::label('discount_price', __('Price') . '(' . $currency_symbol . ')', [
+                                        {{ Form::label('price', __('Price') . ' (' . $currency_symbol . ')', [
                                             'class' => 'form-label col-12 ',
                                         ]) }}
-                                        {{ Form::number('discount_price', '', [
+                                        {{ Form::number('price', 0, [
                                             'class' => 'form-control ',
                                             'placeholder' => __('Package Price'),
                                             'data-parsley-required' => 'true',
-                                            'id' => 'discount_price',
+                                            'id' => 'price',
                                             'min' => '0',
+                                            'step'=>0.01,
                                             'data-parsley-field-name'=>'price',
 
                                         ]) }}
                                     </div>
 
                                     <div class="col-md-6 col-12 form-group mandatory">
-                                        {{ Form::label('price', __('Stripped Price') . '(' . $currency_symbol . ')', [
-                                            'class' => 'form-label col-12 text-decoration-line-through' ,
-                                            'title'=>'This Price will be displayed as Stripped Price'
+                                        {{ Form::label('discount_in_percentage', __('Discount') . ' (%)', [
+                                            'class' => 'form-label col-12 ',
                                         ]) }}
-                                        {{ Form::number('price', '', [
+                                        {{ Form::number('discount_in_percentage', 0, [
+                                            'class' => 'form-control ',
+                                            'placeholder' => __('Package Price'),
+                                            'data-parsley-required' => 'true',
+                                            'id' => 'discount_in_percentage',
+                                            'min' => '0',
+                                            'max'=>'100',
+                                            'step'=>0.01,
+                                            'data-parsley-field-name'=>'price',
+                                        ]) }}
+                                    </div>
+
+                                    <div class="col-md-12 col-12 form-group mandatory">
+                                        {{ Form::label('price', __('Final Price') . ' (' . $currency_symbol . ')', [
+                                            'class' => 'form-label col-12' ,
+                                        ]) }}
+                                        {{ Form::number('final_price', 0, [
                                             'class' => 'form-control ',
                                             'placeholder' => __('Stripped Price'),
                                             'data-parsley-required' => 'true',
-                                            'id' => 'price',
+                                            'id' => 'final_price',
                                             'min' => '0',
-                                            'data-parsley-gt'=>"#discount_price",
-                                            'data-parsley-error-message'=>"This value should be greater then Price"
+                                            'step'=>0.01
                                         ]) }}
                                     </div>
                                 </div>
@@ -179,8 +194,10 @@
                                        data-show-refresh="true" data-fixed-columns="true" data-fixed-number="1"
                                        data-fixed-right-number="1" data-trim-on-search="false" data-responsive="true"
                                        data-sort-name="id" data-sort-order="desc" data-pagination-successively-size="3"
+                                       data-escape="true"
                                        data-query-params="queryParams" data-table="packages"
-                                       data-show-export="true" data-export-options='{"fileName": "item-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
+                                       data-show-export="true" data-export-options='{"fileName": "item-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
+                                       data-mobile-responsive="true">
                                     <thead class="thead-dark">
                                     <tr>
                                         <th scope="col" data-field="id" data-align="center" data-sortable="true">{{ __('ID') }}</th>
@@ -188,13 +205,14 @@
                                         <th scope="col" data-field="name" data-align="center" data-sortable="true">{{ __('Name') }}</th>
                                         <th scope="col" data-field="duration" data-align="center" data-sortable="true">{{ __('Days') }}</th>
                                         <th scope="col" data-field="item_limit" data-align="center" data-sortable="true">{{ __('Item Limit') }}</th>
-                                        <th scope="col" data-field="discount_price" data-align="center" data-sortable="true">{{ __('Price') }}</th>
-                                        <th scope="col" data-field="price" data-align="center" data-sortable="true">{{ __('Striped Price') }}</th>
+                                        <th scope="col" data-field="price" data-align="center" data-sortable="true">{{ __('Price') }}</th>
+                                        <th scope="col" data-field="discount_in_percentage" data-align="center" data-sortable="true">{{ __('Discount in(%)') }}</th>
+                                        <th scope="col" data-field="final_price" data-align="center" data-sortable="true">{{ __('Final Price') }}</th>
                                         <th scope="col" data-field="description" data-align="center" data-sortable="true" data-visible="false">{{ __('Description') }}</th>
                                         <th scope="col" data-field="ios_product_id" data-align="center" data-sortable="true" data-visible="false">{{ __('IOS Product ID') }}</th>
                                         @can('item-listing-package-update')
                                             <th scope="col" data-field="status" data-sortable="true" data-align="center" data-formatter="statusSwitchFormatter">{{ __('Status') }}</th>
-                                            <th scope="col" data-field="operate" data-align="center" data-sortable="false" data-events="packageEvents">{{ __('Action') }}</th>
+                                            <th scope="col" data-field="operate" data-escape="false" data-align="center" data-sortable="false" data-events="packageEvents">{{ __('Action') }}</th>
                                         @endcan
                                     </tr>
                                     </thead>
@@ -236,22 +254,39 @@
                                     </div>
 
                                     <div class="col-md-4 col-12 form-group mandatory">
-                                        {{ Form::label('discount_price', __('Price') . '(' . $currency_symbol . ')', [
+                                        {{ Form::label('price', __('Price') . '(' . $currency_symbol . ')', [
                                             'class' => 'form-label col-12 ',
                                         ]) }}
-                                        {{ Form::number('discount_price', '', [
+                                        {{ Form::number('price', '', [
                                             'class' => 'form-control ',
-                                            'placeholder' => __('Package Discount Price'),
+                                            'placeholder' => __('Price'),
                                             'data-parsley-required' => 'true',
-                                            'id' => 'edit_discount_price',
+                                            'id' => 'edit_price',
+                                            'step'=>0.01,
                                             'min' => '0',
+                                        ]) }}
+                                    </div>
+
+                                    <div class="col-md-4 col-12 form-group mandatory">
+                                        {{ Form::label('discount_in_percentage', __('Discount') . ' (%)', [
+                                            'class' => 'form-label col-12 ',
+                                        ]) }}
+                                        {{ Form::number('discount_in_percentage', 0, [
+                                            'class' => 'form-control ',
+                                            'placeholder' => __('Package Price'),
+                                            'data-parsley-required' => 'true',
+                                            'id' => 'edit_discount_in_percentage',
+                                            'min' => '0',
+                                            'max'=>'100',
+                                            'step'=>0.01,
+                                            'data-parsley-field-name'=>'price',
                                         ]) }}
                                     </div>
 
                                     <div class="col-md-4 col-12">
                                         <div class="form-group mandatory">
-                                            <label for="edit_price" class="form-label col-12 text-decoration-line-through">{{__('Striped Price') . '(' . $currency_symbol . ')'}}</label>
-                                            <input type="text" id="edit_price" class="form-control col-12" min="0" placeholder="{{__('Striped Price') . '(' . $currency_symbol . ')'}}" name="price" data-parsley-required="true" data-parsley-gt="#edit_discount_price" data-parsley-error-message="This value should be greater then Price">
+                                            <label for="edit_final_price" class="form-label col-12">{{__('Final Price') . '(' . $currency_symbol . ')'}}</label>
+                                            <input type="text" id="edit_final_price" class="form-control col-12" min="0" placeholder="{{__('Final Price') . ' (' . $currency_symbol . ')'}}" name="final_price" data-parsley-required="true">
                                         </div>
                                     </div>
 
@@ -330,7 +365,7 @@
                                 <div class="col-md-12 mt-3">
                                     <div class="col-md-12 form-group mandatory">
                                         <label for="edit_description" class="mandatory form-label">{{ __('Description') }}</label><br>
-                                        <textarea id="edit_description" name="description" rows="3" cols="50" required></textarea>
+                                        <textarea id="edit_description" name="description" rows="3" cols="50" class="form-control" required></textarea>
                                     </div>
                                 </div>
                             </div>

@@ -23,13 +23,19 @@
                             <div class="card-header">{{__("Add Feature Section")}}</div>
                             <div class="card-body">
                                 <div class="row mt-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="col-md-12 form-group mandatory">
                                             <label for="title" class="mandatory form-label">{{ __('Title') }}</label>
-                                            <input type="text" name="title" id="title" class="form-control" data-parsley-required="true">
+                                            <input type="text" name="title" id="title" class="form-control feature-section-name" data-parsley-required="true">
                                         </div>
                                     </div>
-                                    <div class="col-md-4 form-group mandatory">
+                                    <div class="col-md-6">
+                                        <div class="col-md-12 form-group mandatory">
+                                            <label for="slug" class="mandatory form-label">{{ __('Slug') }}</label>
+                                            <input type="text" name="slug" id="slug" class="form-control feature-section-slug" data-parsley-required="true">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 form-group mandatory">
                                         <label for="filter" class=" form-label">{{ __('Filters') }}</label>
                                         <select id="filter" name="filter" class="form-control select2">
                                             <option value="most_liked">{{__("Most Liked")}}</option>
@@ -68,7 +74,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                                 <div class="row form-group mandatory">
                                     <label for="Field Name" class=" form-label">{{ __('Select Style for APP Section') }}</label>
@@ -124,8 +129,10 @@
                                data-fixed-columns="true" data-fixed-number="1" data-fixed-right-number="1"
                                data-trim-on-search="false" data-responsive="true"
                                data-pagination-successively-size="3" data-query-params="queryParams"
+                               data-escape="true"
                                data-reorderable-rows="true" data-use-row-attr-func="true" data-table="feature_sections"
-                               data-show-export="true" data-export-options='{"fileName": "featured-section-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
+                               data-show-export="true" data-export-options='{"fileName": "featured-section-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
+                               data-mobile-responsive="true">
                             <thead class="thead-dark">
                             <tr>
                                 <th scope="col" data-field="id" data-sortable="true">{{ __('ID') }}</th>
@@ -137,7 +144,7 @@
                                 <th scope="col" data-field="max_price" data-sortable="true" data-visible="false">{{ __('Max price') }}</th>
                                 <th scope="col" data-field="values_text" data-sortable="false" data-visible="false">{{ __('Value') }}</th>
                                 @canany(['feature-section-update', 'feature-section-delete'])
-                                    <th scope="col" data-field="operate" data-sortable="false" data-events="featuredSectionEvents">{{ __('Action') }}</th>
+                                    <th scope="col" data-field="operate" data-escape="false" data-sortable="false" data-events="featuredSectionEvents">{{ __('Action') }}</th>
                                 @endcanany
                             </tr>
                             </thead>
@@ -159,10 +166,16 @@
                             </div>
                             <div class="modal-body">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="col-md-12 form-group mandatory">
                                             <label for="edit_title" class="mandatory form-label">{{ __('Title') }}</label>
-                                            <input type="text" name="title" id="edit_title" class="form-control" data-parsley-required="true">
+                                            <input type="text" name="title" id="edit_title" class="form-control edit-feature-section-name" data-parsley-required="true">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="col-md-12 form-group mandatory">
+                                            <label for="slug" class="mandatory form-label">{{ __('Slug') }}</label>
+                                            <input type="text" name="slug" id="edit_slug" class="form-control edit-feature-section-slug" data-parsley-required="true">
                                         </div>
                                     </div>
                                     <div class="col-md-4 form-group mandatory">

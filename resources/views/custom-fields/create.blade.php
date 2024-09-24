@@ -46,7 +46,7 @@
                                 <div class="col-md-12" id="field-values-div" style="display: none;">
                                     <label for="values" class="form-label">{{ __('Field Values') }}</label>
                                     <div class="form-group">
-                                        <select id="values" name="values[]" data-tags="true" data-placeholder="{{__("Select an option")}}" data-allow-clear="true" class="select2 col-12 w-100" multiple="multiple" data-parsley-required="true"></select>
+                                        <select id="values" name="values[]" data-tags="true" data-placeholder="{{__("Select an option")}}" data-allow-clear="true" class="select2 w-100 full-width-select2" multiple="multiple" data-parsley-required="true"></select>
                                         <div class="input_hint">{{__("This will be applied only for")}}:
                                             <text class="highlighted_text"> {{__("Checkboxes").",".__("Radio")}}</text>
                                             {{__("and")}}

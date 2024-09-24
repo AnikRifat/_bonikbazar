@@ -11,9 +11,11 @@ class Language extends Model {
 
     protected $fillable = [
         'name',
+        'name_in_english',
         'code',
         'app_file',
         'panel_file',
+        'web_file',
         'rtl',
         'image'
     ];
@@ -24,6 +26,9 @@ class Language extends Model {
 
     public function getImageAttribute($value) {
         if (!empty($value)) {
+            if ($this->code == "en") {
+                return asset("/assets/images/" . $value);
+            }
             return url(Storage::url($value));
         }
         return "";
