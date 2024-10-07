@@ -149,10 +149,6 @@ span.mySpanClass {
     /* filter: drop-shadow(4px 4px 10px #84B5EC); */
 }
 
-.select2-container {
-    width: 100% !important;
-}
-
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background-color: var(--bs-primary) !important;
     color: #fff;
@@ -244,4 +240,41 @@ img.mfp-img {
 
 .primary-background-color {
     background: var(--bs-primary) !important;
+}
+
+.table::-webkit-scrollbar {
+    -webkit-appearance: none;
+}
+
+.table::-webkit-scrollbar:vertical {
+    width: 12px;
+}
+
+.table::-webkit-scrollbar:horizontal {
+    height: 12px;
+}
+
+.table::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, .5);
+    border-radius: 10px;
+    border: 2px solid #ffffff;
+}
+
+.table::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: #ffffff;
+}
+
+.bs-bars.float-left.col-12.col-md-7.col-lg-7.p-0 {
+    margin-top: 0;
+}
+
+.gallery img{
+
+    width: 30px; /* Adjust the width as needed */
+    height: 30px;
+}
+
+.full-width-select2 + .select2-container {
+    width: 100% !important;
 }

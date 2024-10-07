@@ -50,6 +50,19 @@
                                         <h6 class="mb-0">{{__("OR")}}</h6>
 
                                     </div>
+                                    <div class="col-md-12">
+                                        <div class="col-md-12 form-group">
+                                            <label for="category" class="form-label">{{ __('Category') }}</label>
+                                            <select name="category_id" id="category" class="form-select form-control" data-placeholder="{{__("Select Category")}}">
+                                                <option value="">{{__("Select a Category")}}</option>
+                                                @include('category.dropdowntree', ['categories' => $categories])
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-center align-items-center mt-3">
+                                        <h6 class="mb-0">{{__("OR")}}</h6>
+
+                                    </div>
                                     <div class="col-md-12 col-sm-12">
                                         {{ Form::label('third_party_link', __('Third Party Link'), ['class' => 'col-md-12 col-sm-12 col-form-label ',]) }}
                                         {{ Form::text('link', '', [
@@ -88,16 +101,19 @@
                                                data-fixed-columns="true" data-fixed-number="1" data-fixed-right-number="1"
                                                data-trim-on-search="false" data-responsive="true" data-sort-name="id"
                                                data-sort-order="desc" data-pagination-successively-size="3"
+                                               data-escape="true"
                                                data-query-params="queryParams" data-id-field="id"
-                                               data-show-export="true" data-export-options='{"fileName": "slider-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
+                                               data-show-export="true" data-export-options='{"fileName": "slider-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
+                                               data-mobile-responsive="true">
                                             <thead class="thead-dark">
                                             <tr>
                                                 <th scope="col" data-field="id" data-align="center" data-sortable="true">{{ __('ID') }}</th>
                                                 <th scope="col" data-field="image" data-align="center" data-sortable="false" data-formatter="imageFormatter">{{ __('Image') }}</th>
-                                                <th scope="col" data-field="item.name" data-sort-name="item_name" data-align="center" data-sortable="true">{{ __('Item') }}</th>
+                                                <th scope="col" data-field="model_type" data-align="center" data-sortable="true" data-formatter="typeFormatter">{{ __('Type') }}</th>
+                                                <th scope="col" data-field="model.name" data-sort-name="" data-align="center" data-sortable="true">{{ __('Name') }}</th>
                                                 <th scope="col" data-field="third_party_link" data-align="center" data-sortable="true">{{ __('Third Party Link') }}</th>
                                                 @can('slider-delete')
-                                                    <th scope="col" data-field="operate" data-align="center" data-sortable="false">{{ __('Action') }}</th>
+                                                    <th scope="col" data-field="operate" data-escape="false" data-align="center" data-sortable="false">{{ __('Action') }}</th>
                                                 @endcan
                                             </tr>
                                             </thead>
@@ -112,21 +128,24 @@
         </div>
     </section>
 @endsection
+
 @section('js')
     <script>
         function customValidation() {
             let item = $("select[name=item]").val();
+            let category = $("select[name=category_id]").val();
             let link = $("input[name=link]").val();
-            // If any of these fields are valid
-            if (item != "" && link != "") {
-                $('.invalid-form-error-message').html("Please select either of the Fields. Both Fields are not required").addClass("text-danger");
+
+            // If all fields are empty
+            if (item == "" && category == "" && link == "") {
+                // Display an error message
+                $('.invalid-form-error-message').html("Please select either Item, Category, or Add Link").addClass("text-danger");
                 return false;
             }
 
-            // If any of these fields are valid
-            if (item == "" && link == "") {
-                // and display a gentle message
-                $('.invalid-form-error-message').html("Please select either Item OR Add Link").addClass("text-danger");
+            // If more than one field is filled
+            if ((item != "" && category != "") || (item != "" && link != "") || (category != "" && link != "")) {
+                $('.invalid-form-error-message').html("Please select only one field: Item, Category, or Link").addClass("text-danger");
                 return false;
             }
 
@@ -136,4 +155,16 @@
             return true;
         }
     </script>
+    <script>
+        function typeFormatter(value, row) {
+            if (value === 'App\\Models\\Category') {
+                return 'Category';
+            } else if (value === 'App\\Models\\Item') {
+                return 'Item';
+            } else {
+                return '-';
+            }
+        }
+    </script>
 @endsection
+

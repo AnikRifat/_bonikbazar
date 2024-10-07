@@ -56,7 +56,9 @@ class FileService {
      * @return string
      */
     public static function compressAndReplace($requestFile, $folder, $deleteRawOriginalImage) {
-        self::delete($deleteRawOriginalImage);
+        if (!empty($deleteRawOriginalImage)) {
+            self::delete($deleteRawOriginalImage);
+        }
         return self::compressAndUpload($requestFile, $folder);
     }
 
@@ -77,11 +79,11 @@ class FileService {
 
     /**
      * @param $file
-     * @return string
+     * @return bool
      */
     public static function deleteLanguageFile($file) {
         if (file_exists(base_path('resources/lang/') . $file)) {
-            File::delete(base_path('resources/lang/') . $file);
+            return File::delete(base_path('resources/lang/') . $file);
         }
         return true;
     }
@@ -92,7 +94,7 @@ class FileService {
      * @return bool
      */
     public static function delete($image) {
-        if (Storage::disk('public')->exists($image)) {
+        if (!empty($image) && Storage::disk('public')->exists($image)) {
             return Storage::disk('public')->delete($image);
         }
 

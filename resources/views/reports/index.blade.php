@@ -52,14 +52,16 @@
                                            data-show-refresh="true" data-fixed-columns="true" data-fixed-number="1"
                                            data-fixed-right-number="1" data-trim-on-search="false" data-sort-name="id"
                                            data-sort-order="desc" data-pagination-successively-size="3"
+                                           data-escape="true"
                                            data-query-params="reportReasonQueryParams"
-                                           data-show-export="true" data-export-options='{"fileName": "advertisement-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
+                                           data-show-export="true" data-export-options='{"fileName": "advertisement-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']"
+                                           data-mobile-responsive="true">
                                         <thead>
                                         <tr>
                                             <th scope="col" data-field="id" data-sortable="true">{{ __('ID') }}</th>
                                             <th scope="col" data-field="reason" data-sortable="true">{{ __('Reason') }}</th>
                                             @canany(['report-reason-update','report-reason-delete'])
-                                                <th scope="col" data-field="operate" data-events="reportReasonEvents">{{ __('Action') }}</th>
+                                                <th scope="col" data-field="operate" data-escape="false" data-events="reportReasonEvents">{{ __('Action') }}</th>
                                             @endcanany
                                         </tr>
                                         </thead>
@@ -84,7 +86,7 @@
                                     <div class="col-md-12 col-12 ">
                                         <div class="form-group mandatory">
                                             <label for="edit_reason" class="form-label col-12">{{ __('Reason') }}</label>
-                                            <textarea name="reason" id="edit_reason" class="form-control" placeholder={{ __('Reason') }} required></textarea>
+                                            <textarea name="reason" id="edit_reason" class="form-control" placeholder={{ __('Reason') }} required maxlength="200"></textarea>
                                         </div>
                                     </div>
                                 </div>

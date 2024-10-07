@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Razorpay\Api\Customer;
 
 
 class Chat extends Model {
@@ -21,7 +20,7 @@ class Chat extends Model {
     protected $appends = ['message_type'];
 
     public function sender() {
-        return $this->belongsTo(Customer::class, 'sender_id');
+        return $this->belongsTo(User::class, 'sender_id');
     }
 
     public function getFileAttribute($file) {
@@ -38,7 +37,7 @@ class Chat extends Model {
         return $value;
     }
 
-    public function getMessageTypeAttribute($value) {
+    public function getMessageTypeAttribute() {
         if (!empty($this->audio)) {
             return "audio";
         }

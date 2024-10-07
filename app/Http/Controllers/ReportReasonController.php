@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item;
 use App\Models\ReportReason;
+use App\Models\User;
 use App\Models\UserReports;
 use App\Services\BootstrapTableService;
 use App\Services\ResponseService;
@@ -73,7 +75,6 @@ class ReportReasonController extends Controller {
         return response()->json($bulkData);
     }
 
-
     public function update(Request $request, $id) {
         try {
             ResponseService::noPermissionThenSendJson('report-reason-update');
@@ -98,32 +99,47 @@ class ReportReasonController extends Controller {
 
     public function usersReports() {
         ResponseService::noPermissionThenRedirect('user-reports-list');
-        return view('reports.user_reports');
+        $users = User::select(["id", "name"])->has('user_reports')->get();
+        $items = Item::select(["id", "name"])->approved()->has('user_reports')->get();
+        return view('reports.user_reports', compact('users', 'items'));
     }
 
     public function userReportsShow(Request $request) {
-        ResponseService::noPermissionThenRedirect('user-reports-list');
-        $offset = $request->offset ?? 0;
-        $limit = $request->limit ?? 10;
-        $sort = $request->sort ?? 'id';
-        $order = $request->order ?? 'DESC';
-        $sql = UserReports::with('user:id,name', 'report_reason:id,reason', 'item:id,name')->sort($sort, $order);
+        try {
+            ResponseService::noPermissionThenRedirect('user-reports-list');
+            $offset = $request->offset ?? 0;
+            $limit = $request->limit ?? 10;
+            $sort = $request->sort ?? 'id';
+            $order = $request->order ?? 'DESC';
+            $sql = UserReports::with(['user' => fn($q) => $q->select(['id', 'name', 'deleted_at'])->withTrashed(), 'report_reason:id,reason', 'item' => fn($q) => $q->select(['id', 'name', 'deleted_at'])->withTrashed()])->sort($sort, $order);
 
-        if (!empty($request->search)) {
-            $sql = $sql->search($request->search);
+            if (!empty($request->search)) {
+                $sql = $sql->search($request->search);
+            }
+
+            if (!empty($request->filter)) {
+                $sql = $sql->filter(json_decode($request->filter, false, 512, JSON_THROW_ON_ERROR));
+            }
+            $total = $sql->count();
+            $sql->skip($offset)->take($limit);
+            $res = $sql->get();
+            $bulkData = array();
+            $bulkData['total'] = $total;
+            $rows = [];
+            foreach ($res as $row) {
+                $tempRow = $row->toArray();
+                $tempRow['user_status'] = empty($row->user->deleted_at);
+                $tempRow['item_status'] = empty($row->item->deleted_at);
+                $tempRow['reason'] = empty($row->report_reason_id) ? $row->other_message : $row->report_reason->reason;
+                $rows[] = $tempRow;
+            }
+
+            $bulkData['rows'] = $rows;
+            return response()->json($bulkData);
+
+        } catch (Throwable $e) {
+            ResponseService::logErrorResponse($e, "ReportReason Controller -> show");
+            ResponseService::errorResponse();
         }
-        $total = $sql->count();
-        $sql->skip($offset)->take($limit);
-        $res = $sql->get();
-        $bulkData = array();
-        $bulkData['total'] = $total;
-        $rows = array();
-
-        foreach ($res as $row) {
-            $rows[] = $row->toArray();
-        }
-
-        $bulkData['rows'] = $rows;
-        return response()->json($bulkData);
     }
 }

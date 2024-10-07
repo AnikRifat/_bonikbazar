@@ -1,7 +1,7 @@
 function imageFormatter(value) {
     if (value) {
-        return '<a class="image-popup-no-margins" href="' + value + '">' +
-            '<img class="rounded avatar-md shadow img-fluid" alt="" src="' + value + '" width="55" onerror="onErrorImage(event)">' +
+        return '<a class="image-popup-no-margins one-image" href="' + value + '">' +
+            '<img class="rounded avatar-md shadow img-fluid " alt="" src="' + value + '" width="55" onerror="onErrorImage(event)">' +
             '</a>'
     } else {
         return '-'
@@ -12,7 +12,7 @@ function galleryImageFormatter(value) {
     if (value) {
         let html = '<div class="gallery">';
         $.each(value, function (index, data) {
-            html += '<a href="' + data.image + '"><img class="rounded avatar-md shadow img-fluid" alt="" src="' + data.image + '" width="55" onerror="onErrorImage(event)"></a>';
+            html += '<a href="' + data.image + '"><img class="rounded avatar-md shadow img-fluid m-1" alt="" src="' + data.image + '" width="55" onerror="onErrorImage(event)"></a>';
         })
         html += "</div>"
         return html;
@@ -33,34 +33,44 @@ function customFieldFormatter(value, row) {
 }
 
 function statusSwitchFormatter(value, row) {
-    return `<div class="form-check form-switch" style="padding-left: 5.2rem;">
+    return `<div class="form-check form-switch">
         <input class = "form-check-input switch1 update-status" id="${row.id}" type = "checkbox" role = "switch${status}" ${value ? 'checked' : ''}>
     </div>`
 }
+
+function itemStatusSwitchFormatter(value, row) {
+    return `<div class="form-check form-switch">
+        <input class = "form-check-input switch1 update-item-status" id="${row.item_id}" type = "checkbox" role = "switch${status}" ${value ? 'checked' : ''}>
+    </div>`
+}
+
+function userStatusSwitchFormatter(value, row) {
+    return `<div class="form-check form-switch">
+        <input class = "form-check-input switch1 update-user-status" id="${row.user_id}" type = "checkbox" role = "switch${status}" ${value ? 'checked' : ''}>
+    </div>`
+}
+
 
 function itemStatusFormatter(value) {
     let badgeClass, badgeText;
     if (value == "review") {
         badgeClass = 'primary';
         badgeText = 'Under Review';
-    }
-    if (value == "approved") {
+    } else if (value == "approved") {
         badgeClass = 'success';
         badgeText = 'Approved';
-    }
-    if (value == "rejected") {
+    } else if (value == "rejected") {
         badgeClass = 'danger';
         badgeText = 'Rejected';
-    }
-
-    if (value == "sold out") {
+    } else if (value == "sold out") {
         badgeClass = 'warning';
         badgeText = 'Sold Out';
-    }
-
-    if (value == "featured") {
+    } else if (value == "featured") {
         badgeClass = 'black';
         badgeText = 'Featured';
+    } else if (value == "inactive") {
+        badgeClass = 'danger';
+        badgeText = 'Inactive';
     }
     return '<span class="badge rounded-pill bg-' + badgeClass + '">' + badgeText + '</span>';
 }
@@ -126,4 +136,12 @@ function unlimitedBadgeFormatter(value) {
         return 'Unlimited';
     }
     return value;
+}
+
+function detailFormatter(index, row) {
+    let html = []
+    $.each(row.translations, function (key, value) {
+        html.push('<p><b>' + value.language.name + ':</b> ' + value.description + '</p>')
+    })
+    return html.join('')
 }

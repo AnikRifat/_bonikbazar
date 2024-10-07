@@ -10,9 +10,12 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                 </div>
-                <div class="col-2">
-                    <span class="badge alert-info primary-background-color">Demo Mode</span>
-                </div>
+
+                @if(config('app.demo_mode'))
+                    <div class="col-2">
+                        <span class="badge alert-info primary-background-color">Demo Mode</span>
+                    </div>
+                @endif
             </div>
             <div class="col-6 justify-content-end d-flex">
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">

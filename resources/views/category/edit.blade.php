@@ -42,17 +42,22 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-12">
+                                    <div class="col-md-12 form-group mandatory">
+                                        <label for="slug" class="form-label">{{ __('Slug') }} <small>(English
+                                                Only)</small></label>
+                                        <input type="text" name="slug" id="slug" class="form-control" data-parsley-required="true" value="{{ $category_data->slug }}">
+                                    </div>
+                                </div>
 
                                 <div class="col-md-6">
-
-                                    <label for="category_description" class="mandatory form-label">{{ __('Description') }}</label>
-                                    <textarea name="category_description" id="category_description" class="form-control" cols="10" rows="4">{{ $category_data->description }}</textarea>
+                                    <label for="description" class="mandatory form-label">{{ __('Description') }}</label>
+                                    <textarea name="description" id="description" class="form-control" cols="10" rows="5">{{ $category_data->description }}</textarea>
                                     <div class="form-check form-switch mt-3">
-                                        <input type="hidden" name="status" id="status" value="">
-                                        <input class="form-check-input status-switch" type="checkbox" role="switch" name="active" id="required"{{ $category_data->status == 1 ? 'checked' : '' }}>{{ __('Active') }}
-                                        <label class="form-check-label" for="required"></label>
+                                        <input type="hidden" name="status" id="status" value="{{ $category_data->status}}">
+                                        <input class="form-check-input status-switch" type="checkbox" role="switch" aria-label="status" name="active" id="required" {{ $category_data->status == 1 ? 'checked' : '' }}>{{ __('Active') }}
+                                        <label class="form-check-label" for="status"></label>
                                     </div>
-
                                 </div>
                                 <div class="col-md-6">
                                     <div class="col-md-12 form-group mandatory">
@@ -66,7 +71,21 @@
                                         <div class="img_error" style="color:#DC3545;"></div>
                                     </div>
                                 </div>
+
                             </div>
+                            @foreach($languages as $key=>$language)
+                                <hr>
+                                <h5>{{__("Translation")}}</h5>
+                                <div class="row">
+
+                                    <hr>
+                                    <h5>{{($key+1).". ".$language->name}}</h5>
+                                    <div class="col-md-12 form-group">
+                                        <label for="name" class="form-label">{{ __('Name') }} : </label>
+                                        <input name="translations[{{$language->id}}]" id="name" class="form-control" value="{{ $translations[$language->id] ?? '' }}" required>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                     <div class="col-md-12 text-end">

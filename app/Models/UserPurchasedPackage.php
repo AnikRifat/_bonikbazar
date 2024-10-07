@@ -17,6 +17,7 @@ class UserPurchasedPackage extends Model {
         'end_date',
         'total_limit',
         'used_limit',
+        'payment_transactions_id',
     ];
 
     protected $appends = ['remaining_days', 'remaining_item_limit'];
@@ -29,15 +30,13 @@ class UserPurchasedPackage extends Model {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function scopeOnlyActive($query) {
-//        return $query->where('user_id', $userID)->whereDate('start_date', '>=', date('Y-m-d'))->where(function ($q) {
-//            $q->whereDate('end_date', '<=', date('Y-m-d'))->orWhereNull('end_date');
-//        })->where(function ($q) {
-//            $q->whereColumn('used_limit', '>', 'total_limit')->orWhereNull('total_limit');
-//        })->orderBy('end_date', 'asc');
+    public function PaymentTransaction() {
+        return $this->belongsTo(PaymentTransaction::class);
+    }
 
+    public function scopeOnlyActive($query) {
         return $query->where('user_id', Auth::user()->id)->whereDate('start_date', '<=', date('Y-m-d'))->where(function ($q) {
-            $q->whereDate('end_date', '>=', date('Y-m-d'))->orWhereNull('end_date');
+            $q->whereDate('end_date', '>', date('Y-m-d'))->orWhereNull('end_date');
         })->where(function ($q) {
             $q->whereColumn('used_limit', '<', 'total_limit')->orWhereNull('total_limit');
         })->orderBy('end_date', 'asc');

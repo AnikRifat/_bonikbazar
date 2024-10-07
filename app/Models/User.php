@@ -25,11 +25,11 @@ class User extends Authenticatable {
         'mobile',
         'password',
         'type',
-        'fcm_id',
         'firebase_id',
         'profile',
         'address',
-        'notification'
+        'notification',
+        'country_code'
     ];
 
     /**
@@ -58,7 +58,7 @@ class User extends Authenticatable {
         }
         return $image;
     }
-    
+
     public function items() {
         return $this->hasMany(Item::class);
     }
@@ -72,7 +72,6 @@ class User extends Authenticatable {
                 ->orWhere('mobile', 'LIKE', $search)
                 ->orWhere('name', 'LIKE', $search)
                 ->orWhere('type', 'LIKE', $search)
-                ->orWhere('fcm_id', 'LIKE', $search)
                 ->orWhere('notification', 'LIKE', $search)
                 ->orWhere('firebase_id', 'LIKE', $search)
                 ->orWhere('address', 'LIKE', $search)
@@ -82,4 +81,11 @@ class User extends Authenticatable {
         return $query;
     }
 
+    public function user_reports() {
+        return $this->hasMany(UserReports::class);
+    }
+
+    public function fcm_tokens() {
+        return $this->hasMany(UserFcmToken::class);
+    }
 }

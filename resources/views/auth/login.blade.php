@@ -55,14 +55,14 @@
                         <button class="btn btn-primary btn-block btn-sm shadow-lg mt-3 login_btn">Log in</button>
                         @if (config('app.demo_mode'))
                             <div class="text-danger text-center mt-2" role="alert">
-                                If you are getting 419 Error while login, Then Click Here & Then Login.
+                                If you cannot login, then Click Here.
                                 <br><a class="text-decoration-underline" target="_blank" href="{{Request::root()}}">{{Request::root()}}</a>
                             </div>
                         @endif
                         @if (config('app.demo_mode'))
                             <div class="row mt-3">
                                 <hr class="w-100">
-                                <div class="col-12 text-center mb-4 text-black-50">Demo Credentials</div>
+                                <div class="col-12 text-center text-black-50">Demo Credentials</div>
                             </div>
 
                             <div class="row mt-3">
@@ -102,7 +102,7 @@
 
     @if (config('app.demo_mode'))
     // Super admin panel
-    $('#admin_btn').on('click', function (e) {
+    $('#admin_btn').on('click', function () {
         $('#email').val('admin@gmail.com');
         $('#password').val('admin123');
         $('.login_btn').attr('disabled', true);
@@ -110,7 +110,7 @@
         $('#frmLogin').submit();
     })
 
-    $('#staff_btn').on('click', function (e) {
+    $('#staff_btn').on('click', function () {
         $('#email').val('staff@gmail.com');
         $('#password').val('Staff@123');
         $('.login_btn').attr('disabled', true);

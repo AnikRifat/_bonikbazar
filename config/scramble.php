@@ -79,7 +79,6 @@ return [
     'servers' => null,
 
     'middleware' => [
-        'api',
         'web',
         RestrictedDocsAccess::class,
     ],

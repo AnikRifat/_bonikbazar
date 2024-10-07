@@ -14,7 +14,7 @@
         <div class="px-4 py-8 border-b border-gray-200 sm:px-6">
             <div class="flex justify-center items-center">
                 <img alt="App logo" class="h-12" src="{{ config('installer.icon') }}">
-                <h2 class="pl-6 uppercase font-medium text-2xl text-gray-800">{{ config('app.name', 'Laravel') }} Installation | NULLED by raz0r</h2>
+                <h2 class="pl-6 uppercase font-medium text-2xl text-gray-800">{{ config('app.name', 'Laravel') }} Installation</h2>
             </div>
         </div>
         <div class="px-4 py-5 sm:px-6 w-full">

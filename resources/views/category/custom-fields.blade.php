@@ -32,17 +32,18 @@
                            data-toggle="table" data-url="{{ route('category.custom-fields.show', $cat_id) }}"
                            data-click-to-select="true" data-side-pagination="server" data-pagination="true"
                            data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-search-align="right"
+                           data-escape="true"
                            data-toolbar="#toolbar" data-show-columns="true" data-show-refresh="true" data-fixed-columns="true"
                            data-fixed-number="1" data-fixed-right-number="1" data-trim-on-search="false" data-responsive="true"
                            data-sort-name="id" data-sort-order="desc" data-pagination-successively-size="3"
-                           data-query-params="queryParams">
+                           data-query-params="queryParams" data-mobile-responsive="true">
                         <thead class="thead-dark">
                         <tr>
                             <th scope="col" data-field="state" data-checkbox="true"></th>
                             <th scope="col" data-field="id" data-align="center" data-sortable="true">{{ __('ID') }}</th>
                             <th scope="col" data-field="image" data-align="center" data-formatter='imageFormatter'>{{ __('Image') }}</th>
                             <th scope="col" data-field="name" data-align="center" data-sortable="true">{{ __('Custom Field') }}</th>
-                            <th scope="col" data-field="operate" data-sortable="false">{{ __('Action') }}</th>
+                            <th scope="col" data-field="operate" data-escape="false" data-sortable="false">{{ __('Action') }}</th>
                         </tr>
                         </thead>
                     </table>

@@ -25,7 +25,6 @@
                             <form action="{{ route('notification.store') }}" class="create-form needs-validation" method="post" data-parsley-validate enctype="multipart/form-data">
                                 <div class="card-body">
                                     <textarea id="user_id" name="user_id" style="visibility: hidden;position: absolute;" aria-label="user_id"></textarea>
-                                    <textarea id="fcm_id" name="fcm_id" style="visibility: hidden;position: absolute" aria-label="fcm_id_id"></textarea>
                                     <div class="form-group row">
                                         <div class="col-md-12 col-sm-12">
                                             <label for="send_to" class="form-label">{{ __('Select User') }}</label>
@@ -96,7 +95,9 @@
                                                data-fixed-columns="true" data-fixed-number="1" data-fixed-right-number="1"
                                                data-trim-on-search="false" data-responsive="true" data-sort-name="id"
                                                data-sort-order="desc" data-pagination-successively-size="3"
-                                               data-query-params="userListQueryParams">
+                                               data-escape="true"
+                                               data-query-params="notificationUserList"
+                                               data-mobile-responsive="true">
                                             {{--data-response-handler="responseHandler"--}}
                                             <thead class="thead-dark">
                                             <tr>
@@ -130,6 +131,7 @@
                                    data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-toolbar="#toolbar"
                                    data-show-columns="true" data-show-refresh="true" data-fixed-columns="true"
                                    data-fixed-number="1" data-fixed-right-number="1" data-trim-on-search="false"
+                                   data-escape="true"
                                    data-responsive="true" data-sort-name="id" data-sort-order="desc"
                                    data-pagination-successively-size="3" data-show-export="true" data-export-options='{"fileName": "advertisement-package-list","ignoreColumn": ["operate"]}' data-export-types="['pdf','json', 'xml', 'csv', 'txt', 'sql', 'doc', 'excel']">
                                 <thead>
@@ -144,7 +146,7 @@
                                     <th scope="col" data-field="send_to" data-sortable="true">{{ __('Send To') }}</th>
                                     {{--                                    <th scope="col" data-field="user.name" data-sortable="true">{{ __('User') }}</th>--}}
                                     @can('notification-delete')
-                                        <th scope="col" data-field="operate">{{ __('Action') }}</th>
+                                        <th scope="col" data-field="operate" data-escape="false">{{ __('Action') }}</th>
                                     @endcan
                                 </tr>
                                 </thead>

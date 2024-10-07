@@ -49,6 +49,21 @@ class SystemUpdateController extends Controller {
             $app_url = (string)url('/');
             $app_url = preg_replace('#^https?://#i', '', $app_url);
             $current_version = Setting::where('name', 'system_version')->first()['value'];
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL            => 'https://wrteam.in/validator/eclassify_validator?purchase_code=' . $request->purchase_code . '&domain_url=' . $app_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_MAXREDIRS      => 10,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST  => 'GET',
+            ));
+            $response = curl_exec($curl);
+            curl_close($curl);
+            $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            if ($response['error']) {
+                ResponseService::errorResponse($response["message"]);
+            }
 
             if (!is_dir($this->destinationPath) && !mkdir($concurrentDirectory = $this->destinationPath, 0777, TRUE) && !is_dir($concurrentDirectory)) {
 //                sprintf('Directory "%s" was not created', $concurrentDirectory)
@@ -114,7 +129,8 @@ class SystemUpdateController extends Controller {
             $zip1->close();
 
             Artisan::call('migrate');
-            Artisan::call('db:seed --class=InstallationSeeder');
+            Artisan::call('db:seed --class=SystemUpgradeSeeder');
+            Artisan::call('optimize:clear');
 
             unlink($source_path1);
             unlink($ver_file1);

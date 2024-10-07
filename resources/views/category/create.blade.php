@@ -29,10 +29,17 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="col-md-12 form-group mandatory">
-                                        <label for="name" class="mandatory form-label">{{ __('Name') }}</label>
-                                        <input type="text" name="name" id="name" class="form-control" data-parsley-required="true">
+                                        <label for="category_name" class="mandatory form-label">{{ __('Name') }}</label>
+                                        <input type="text" name="name" id="category_name" class="form-control" data-parsley-required="true">
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="col-md-12 form-group mandatory">
+                                        <label for="category_slug" class="form-label">{{ __('Slug') }} <small>(English Only)</small></label>
+                                        <input type="text" name="slug" id="category_slug" class="form-control" data-parsley-required="true">
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6">
                                     <div class="col-md-12 form-group">
                                         <label for="p_category" class="form-label">{{ __('Parent Category') }}</label>
@@ -44,20 +51,36 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="category_description" class="mandatory form-label">{{ __('Description') }}</label>
-                                    <textarea name="category_description" id="category_description" class="form-control" cols="10" rows="5"></textarea>
+                                    <div class="col-md-12 form-group mandatory">
+                                        <label for="Field Name" class="mandatory form-label">{{ __('Image') }}</label>
+                                        <input type="file" name="image" id="image" class="form-control" data-parsley-required="true" accept=".jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="description" class="mandatory form-label">{{ __('Description') }}</label>
+                                    <textarea name="description" id="description" class="form-control" cols="10" rows="5"></textarea>
                                     <div class="form-check form-switch mt-3">
                                         <input type="hidden" name="status" id="status" value="0">
                                         <input class="form-check-input status-switch" type="checkbox" role="switch" aria-label="status">{{ __('Active') }}
                                         <label class="form-check-label" for="status"></label>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="col-md-12 form-group mandatory">
-                                        <label for="Field Name" class="mandatory form-label">{{ __('Image') }}</label>
-                                        <input type="file" name="image" id="image" class="form-control" data-parsley-required="true" accept=".jpg,.jpeg,.png">
+
+
+                                @if($languages->isNotEmpty())
+                                    <hr>
+                                    <h5>{{__("Translation")}}</h5>
+                                    <div class="row">
+                                        @foreach($languages as $key=>$language)
+                                            <hr>
+                                            <h5>{{($key+1).". ".$language->name}}</h5>
+                                            <div class="col-md-12 form-group">
+                                                <label for="name_{{$language->id}}" class="form-label">{{ __('Name') }} : </label>
+                                                <input name="translations[{{$language->id}}]" id="name_{{$language->id}}" class="form-control" value="" required>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -69,3 +92,5 @@
         </div>
     </section>
 @endsection
+
+
